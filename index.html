@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ceklist Belanja Bumbu Dapur</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8fafc;
+        }
+        .strikethrough {
+            text-decoration: line-through;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen pb-12">
+
+    <header class="bg-gradient-to-r from-emerald-600 to-teal-700 text-white py-8 px-4 shadow-md text-center">
+        <h1 class="text-2xl md:text-3xl font-bold tracking-tight">Ceklist Belanja Bumbu & Kebutuhan Dapur</h1>
+        <p class="text-emerald-100 text-sm mt-2 max-w-md mx-auto">Menu: Sate Kambing, Olahan Kaki Sapi, Jerohan Goreng Ketumbar, Sop Balungan Sapi, Sate Sapi</p>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 mt-6">
+        
+        <div id="api-warning" class="bg-amber-50 border-l-4 border-amber-500 p-4 mb-6 rounded-r-lg shadow-xs text-sm text-amber-800">
+            <p class="font-semibold">⚠️ Konfigurasi Diperlukan:</p>
+            <p class="mt-1">Silakan buka file <code class="bg-amber-100 px-1 rounded font-mono text-xs text-amber-900">index.html</code> dan ganti nilai <code class="font-mono text-xs">API_URL</code> dengan URL Web App dari Google Apps Script Anda agar data tersinkronisasi secara otomatis.</p>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-xs border border-slate-100 p-6 mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="p-3 bg-slate-50 rounded-lg text-center">
+                <span class="block text-xs font-semibold uppercase tracking-wider text-slate-500">Total Item</span>
+                <span id="stat-total" class="text-2xl font-bold text-slate-800">0</span>
+            </div>
+            <div class="p-3 bg-emerald-50 rounded-lg text-center">
+                <span class="block text-xs font-semibold uppercase tracking-wider text-emerald-600">Sudah Dibeli</span>
+                <span id="stat-dibeli" class="text-2xl font-bold text-emerald-700">0</span>
+            </div>
+            <div class="p-3 bg-amber-50 rounded-lg text-center">
+                <span class="block text-xs font-semibold uppercase tracking-wider text-amber-600">Belum Dibeli</span>
+                <span id="stat-belum" class="text-2xl font-bold text-amber-700">0</span>
+            </div>
+            <div class="p-3 bg-teal-50 rounded-lg text-center">
+                <span class="block text-xs font-semibold uppercase tracking-wider text-teal-600">Total Belanja</span>
+                <span id="stat-harga" class="text-xl font-bold text-teal-700">Rp 0</span>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-xs border border-slate-100 p-5 mb-8">
+            <h2 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                Tambah Item Baru
+            </h2>
+            <form id="form-tambah" class="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Nama Item/Bumbu</label>
+                    <input type="text" id="input-nama" required class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-500" placeholder="Contoh: Merica Bubuk">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Kategori</label>
+                    <select id="input-kategori" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-500">
+                        <option value="BUMBU SEGAR & EMPON-EMPON">BUMBU SEGAR & EMPON-EMPON</option>
+                        <option value="BUMBU KERING & REMPAH">BUMBU KERING & REMPAH</option>
+                        <option value="BAHAN RACIKAN & KEBUTUHAN LAIN">BAHAN RACIKAN & KEBUTUHAN LAIN</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Keterangan / Catatan</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="input-ket" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-500" placeholder="Opsional...">
+                        <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm px-4 py-2 rounded-lg transition-colors shadow-xs shrink-0">
+                            Tambah
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div id="loading-state" class="text-center py-12 text-slate-400 font-medium hidden">
+            <svg class="animate-spin h-8 w-8 mx-auto mb-3 text-emerald-600" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Menyinkronkan data dengan Google Sheets...
+        </div>
+
+        <div id="lists-container" class="space-y-8">
+            </div>
+
+        <footer class="mt-12 bg-amber-50 border border-amber-200 rounded-xl p-5 shadow-xs">
+            <div class="flex items-start gap-3">
+                <div class="bg-amber-500 text-white rounded-full p-1 shrink-0 mt-0.5">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div>
+                    <h4 class="font-bold text-amber-900 text-sm">Tips Pengolahan Daging & Jerohan:</h4>
+                    <p class="text-amber-800 text-xs md:text-sm mt-1 leading-relaxed">Rebus terpisah kaki sapi dan jerohan dengan jahe, salam, dan serai sebelum dicampur ke bumbu utama agar tidak bau prengus.</p>
+                </div>
+            </div>
+        </footer>
+    </main>
+
+    <script>
+        // =========================================================================
+        // PENTING: Ganti URL di bawah ini dengan URL Web App dari Google Apps Script Anda!
+        // =========================================================================
+        const API_URL = "https://script.google.com/macros/s/AKfycbxP-Clo96TuoVJbPq97jeDY0iBtZXqEoDx068r1N7k49rTB3W3rSHc-J18mlKYNx_9T6g/exec";
+
+        // Pre-filled raw dataset from PDF to run locally if spreadsheet isn't deployed yet
+        let defaultItems = [
+            // Kategori 1
+            { id: "1", kategori: "BUMBU SEGAR & EMPON-EMPON", nama: "Bawang Merah", ket: "Beli agak banyak (dasar & bawang goreng)", selesai: false, harga: 0 },
+            { id: "2", kategori: "BUMBU SEGAR & EMPON-EMPON", nama: "Bawang Putih", ket: "Beli agak banyak (dasar semua masakan)", selesai: false, harga: 0 },
+            { id: "3", kategori: "BUMBU SEGAR & EMPON-EMPON", nama: "Jahe", ket: "Untuk rebusan kaki & jerohan", selesai: false, harga: 0 },
+            { id: "4", kategori: "BUMBU SEGAR & EMPON-EMPON", nama: "Lengkuas / Laos", ket: "", selesai: false, harga: 0 },
+            { id: "5", kategori: "BUMBU SEGAR & EMPON-EMPON", nama: "Knyit", ket: "Untuk jerohan & kaki sapi", selesai: false, harga: 0 },
+            { id: "6", kategori: "BUMBU SEGAR & EMPON-EMPON", nama: "Daun Jeruk", ket: "Untuk marinasi jerohan", selesai: false, harga: 0 },
+            { id: "7", kategori: "BUMBU SEGAR & EMPON-EMPON", nama: "Daun Salam", ket: "Pengilang amis rebusan", selesai: false, harga: 0 },
+            { id: "8", kategori: "BUMBU SEGAR & EMPON-EMPON", nama: "Serai", ket: "Beberapa batang", selesai: false, harga: 0 },
+            { id: "9", kategori: "BUMBU SEGAR & EMPON-EMPON", nama: "Daun Bawang & Seledri", ket: "Pewangi sate & jerohan", selesai: false, harga: 0 },
+            { id: "10", kategori: "BUMBU SEGAR & EMPON-EMPON", nama: "Tomat Merah", ket: "Khusus untuk Sop Balungan", selesai: false, harga: 0 },
+            { id: "11", kategori: "BUMBU SEGAR & EMPON-EMPON", nama: "Jeruk Nipis / Jeruk Limau", ket: "Pelengkap sop & sambal kecap", selesai: false, harga: 0 },
+            { id: "12", kategori: "BUMBU SEGAR & EMPON-EMPON", nama: "Cabai Rawit (Merah/Hijau)", ket: "Untuk kuah sop, sate, & sambal kecap", selesai: false, harga: 0 },
+            // Kategori 2
+            { id: "13", kategori: "BUMBU KERING & REMPAH", nama: "Ketumbar (Bubuk / Butiran)", ket: "Untuk marinasi sate sapi & jerohan", selesai: false, harga: 0 },
+            { id: "14", kategori: "BUMBU KERING & REMPAH", nama: "Merica / Lada Putih", ket: "Untuk sop & sate", selesai: false, harga: 0 },
+            { id: "15", kategori: "BUMBU KERING & REMPAH", nama: "Kemiri", ket: "Untuk pengental kuah/bumbu sate sapi", selesai: false, harga: 0 },
+            { id: "16", kategori: "BUMBU KERING & REMPAH", nama: "Pala (Biji / Bubuk)", ket: "Wajib untuk Sop Balungan", selesai: false, harga: 0 },
+            { id: "17", kategori: "BUMBU KERING & REMPAH", nama: "Kayu Manis", ket: "Rempah aromatik sop/olahan kaki", selesai: false, harga: 0 },
+            { id: "18", kategori: "BUMBU KERING & REMPAH", nama: "Cengkeh", ket: "Penambah aroma sop balungan", selesai: false, harga: 0 },
+            { id: "19", kategori: "BUMBU KERING & REMPAH", nama: "Kapulaga", ket: "Pewangi kuah sop/olahan kaki", selesai: false, harga: 0 },
+            { id: "20", kategori: "BUMBU KERING & REMPAH", nama: "Bunga Lawang / Pekak", ket: "Pewangi kuah sop/olahan kaki", selesai: false, harga: 0 },
+            { id: "21", kategori: "BUMBU KERING & REMPAH", nama: "Asam Jawa", ket: "Beli lebih (bumbu utama jerohan)", selesai: false, harga: 0 },
+            // Kategori 3
+            { id: "22", kategori: "BAHAN RACIKAN & KEBUTUHAN LAIN", nama: "Kecap Manis", ket: "Ukuran besar (untuk bumbu bakaran)", selesai: false, harga: 0 },
+            { id: "23", kategori: "BAHAN RACIKAN & KEBUTUHAN LAIN", nama: "Gula Merah / Gula Jawa", ket: "Secukupnya", selesai: false, harga: 0 },
+            { id: "24", kategori: "BAHAN RACIKAN & KEBUTUHAN LAIN", nama: "Garam & Gula Pasir", ket: "Stok dapur", selesai: false, harga: 0 },
+            { id: "25", kategori: "BAHAN RACIKAN & KEBUTUHAN LAIN", nama: "Kaldu Sapi Bubuk", ket: "Penyedap kuah sop & olahan kaki", selesai: false, harga: 0 },
+            { id: "26", kategori: "BAHAN RACIKAN & KEBUTUHAN LAIN", nama: "Minyak Goreng", ket: "Untuk menggoreng jerohan & tumis", selesai: false, harga: 0 },
+            { id: "27", kategori: "BAHAN RACIKAN & KEBUTUHAN LAIN", nama: "Bawang Goreng Siap Pakai", ket: "Taburan sate & sop (opsional)", selesai: false, harga: 0 },
+            { id: "28", kategori: "BAHAN RACIKAN & KEBUTUHAN LAIN", nama: "Arang", ket: "Bahan bakar utama untuk memanggang sate", selesai: false, harga: 0 }
+        ];
+
+        let shoppingItems = [];
+
+        // Check if user has updated the API URL
+        const isApiConfigured = API_URL !== "ISI_URL_WEB_APP_DI_SINI" && API_URL.trim() !== "";
+
+        document.addEventListener("DOMContentLoaded", () => {
+            if (isApiConfigured) {
+                document.getElementById("api-warning").classList.add("hidden");
+                loadDataFromSheets();
+            } else {
+                // Fallback to local memory using default list if sheets are not integrated yet
+                shoppingItems = [...defaultItems];
+                renderApp();
+            }
+
+            // Register form listener
+            document.getElementById("form-tambah").addEventListener("submit", handleAddItem);
+        });
+
+        // Fetch Data from Google Sheets
+        function loadDataFromSheets() {
+            toggleLoading(true);
+            fetch(`${API_URL}?action=read`)
+                .then(res => res.json())
+                .then(data => {
+                    shoppingItems = data;
+                    renderApp();
+                })
+                .catch(err => {
+                    console.error("Gagal memuat data:", err);
+                    alert("Gagal terhubung ke Google Sheets. Menggunakan database lokal sementara.");
+                    shoppingItems = [...defaultItems];
+                    renderApp();
+                })
+                .finally(() => toggleLoading(false));
+        }
+
+        function toggleLoading(show) {
+            const loader = document.getElementById("loading-state");
+            const container = document.getElementById("lists-container");
+            if (show) {
+                loader.classList.remove("hidden");
+                container.classList.add("opacity-40");
+            } else {
+                loader.classList.add("hidden");
+                container.classList.remove("opacity-40");
+            }
+        }
+
+        // Render entire UI layout
+        function renderApp() {
+            const container = document.getElementById("lists-container");
+            container.innerHTML = "";
+
+            // Group by category
+            const categories = [
+                "BUMBU SEGAR & EMPON-EMPON",
+                "BUMBU KERING & REMPAH",
+                "BAHAN RACIKAN & KEBUTUHAN LAIN"
+            ];
+
+            categories.forEach(cat => {
+                const itemsInCat = shoppingItems.filter(item => item.kategori === cat);
+                
+                // Create section block
+                const section = document.createElement("div");
+                section.className = "bg-white rounded-xl shadow-xs border border-slate-100 overflow-hidden";
+                
+                // Section Header
+                const header = document.createElement("div");
+                header.className = "bg-slate-50 border-b border-slate-100 px-5 py-3.5 flex justify-between items-center";
+                header.innerHTML = `<h3 class="font-bold text-sm text-slate-700 tracking-wide">${cat}</h3>
+                                    <span class="text-xs font-semibold bg-slate-200/80 text-slate-600 px-2 py-0.5 rounded-full">${itemsInCat.length} Item</span>`;
+                section.appendChild(header);
+
+                // Section Body / Items List
+                const listGroup = document.createElement("div");
+                listGroup.className = "divide-y divide-slate-100";
+
+                if (itemsInCat.length === 0) {
+                    listGroup.innerHTML = `<div class="p-5 text-center text-sm text-slate-400 italic">Belum ada bumbu di kategori ini.</div>`;
+                } else {
+                    itemsInCat.forEach(item => {
+                        const row = document.createElement("div");
+                        row.className = `p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-colors ${item.selesai ? 'bg-slate-50/50' : 'hover:bg-slate-50/30'}`;
+                        
+                        // Left side: Checkbox and Info
+                        const leftSide = document.createElement("div");
+                        leftSide.className = "flex items-start gap-3 flex-1";
+                        
+                        const checkbox = document.createElement("input");
+                        checkbox.type = "checkbox";
+                        checkbox.checked = item.selesai;
+                        checkbox.className = "w-5 h-5 rounded-md border-slate-300 text-emerald-600 focus:ring-emerald-500 mt-0.5 cursor-pointer";
+                        checkbox.addEventListener("change", () => handleToggleCheck(item.id, checkbox.checked));
+                        
+                        const textInfo = document.createElement("div");
+                        textInfo.className = "space-y-0.5";
+                        
+                        const nameSpan = document.createElement("span");
+                        nameSpan.className = `text-sm font-semibold block ${item.selesai ? 'strikethrough' : 'text-slate-800'}`;
+                        nameSpan.innerText = item.nama;
+                        
+                        textInfo.appendChild(nameSpan);
+                        
+                        if (item.ket) {
+                            const descSpan = document.createElement("span");
+                            descSpan.className = "text-xs text-slate-400 block leading-normal";
+                            descSpan.innerText = item.ket;
+                            textInfo.appendChild(descSpan);
+                        }
+
+                        leftSide.appendChild(checkbox);
+                        leftSide.appendChild(textInfo);
+
+                        // Right side: Price input and Delete Action
+                        const rightSide = document.createElement("div");
+                        rightSide.className = "flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t sm:border-0 border-slate-100";
+
+                        // Price Input
+                        const priceWrapper = document.createElement("div");
+                        priceWrapper.className = "flex items-center bg-slate-100 rounded-lg px-2 py-1 border border-slate-200 max-w-[140px]";
+                        priceWrapper.innerHTML = `<span class="text-xs font-bold text-slate-400 mr-1">Rp</span>`;
+                        
+                        const priceInput = document.createElement("input");
+                        priceInput.type = "number";
+                        priceInput.value = item.harga || "";
+                        priceInput.placeholder = "0";
+                        priceInput.className = "bg-transparent w-full border-0 p-0 text-xs font-semibold focus:ring-0 focus:outline-hidden text-right";
+                        priceInput.addEventListener("blur", () => handlePriceChange(item.id, priceInput.value));
+                        priceInput.addEventListener("keypress", (e) => { if(e.key === "Enter") priceInput.blur(); });
+
+                        priceWrapper.appendChild(priceInput);
+
+                        // Delete Button
+                        const deleteBtn = document.createElement("button");
+                        deleteBtn.className = "text-slate-400 hover:text-rose-500 p-1.5 rounded-lg hover:bg-rose-50 transition-colors ml-1";
+                        deleteBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>`;
+                        deleteBtn.addEventListener("click", () => handleDeleteItem(item.id));
+
+                        rightSide.appendChild(priceWrapper);
+                        rightSide.appendChild(deleteBtn);
+
+                        row.appendChild(leftSide);
+                        row.appendChild(rightSide);
+                        listGroup.appendChild(row);
+                    });
+                }
+
+                section.appendChild(listGroup);
+                container.appendChild(section);
+            });
+
+            updateSummaryCounters();
+        }
+
+        // Calculate and display stats
+        function updateSummaryCounters() {
+            const total = shoppingItems.length;
+            const dibeli = shoppingItems.filter(i => i.selesai).length;
+            const belum = total - dibeli;
+            const totalHarga = shoppingItems.reduce((acc, curr) => acc + (Number(curr.harga) || 0), 0);
+
+            document.getElementById("stat-total").innerText = total;
+            document.getElementById("stat-dibeli").innerText = dibeli;
+            document.getElementById("stat-belum").innerText = belum;
+            document.getElementById("stat-harga").innerText = "Rp " + totalHarga.toLocaleString("id-ID");
+        }
+
+        // Action Handlers
+        function handleAddItem(e) {
+            e.preventDefault();
+            const nama = document.getElementById("input-nama").value.trim();
+            const kategori = document.getElementById("input-kategori").value;
+            const ket = document.getElementById("input-ket").value.trim();
+            const id = "ID_" + Date.now();
+
+            if (!nama) return;
+
+            const newItem = { id, kategori, nama, ket, selesai: false, harga: 0 };
+
+            if (isApiConfigured) {
+                toggleLoading(true);
+                fetch(`${API_URL}?action=create`, {
+                    method: "POST",
+                    mode: "no-cors",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(newItem)
+                }).then(() => {
+                    // Because no-cors won't give readable responses, optimally refresh local view instantly
+                    shoppingItems.push(newItem);
+                    renderApp();
+                }).catch(err => console.error(err))
+                  .finally(() => toggleLoading(false));
+            } else {
+                shoppingItems.push(newItem);
+                renderApp();
+            }
+
+            // Reset form input
+            document.getElementById("input-nama").value = "";
+            document.getElementById("input-ket").value = "";
+        }
+
+        function handleToggleCheck(id, isChecked) {
+            const idx = shoppingItems.findIndex(i => i.id == id);
+            if(idx !== -1) {
+                shoppingItems[idx].selesai = isChecked;
+                updateSummaryCounters();
+                
+                // Toggle strikethrough instantly on dynamic node UI level for responsiveness
+                renderApp(); 
+
+                if (isApiConfigured) {
+                    fetch(`${API_URL}?action=update`, {
+                        method: "POST",
+                        mode: "no-cors",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ id, selesai: isChecked })
+                    }).catch(err => console.error(err));
+                }
+            }
+        }
+
+        function handlePriceChange(id, value) {
+            const price = Number(value) || 0;
+            const idx = shoppingItems.findIndex(i => i.id == id);
+            if(idx !== -1 && shoppingItems[idx].harga !== price) {
+                shoppingItems[idx].harga = price;
+                updateSummaryCounters();
+
+                if (isApiConfigured) {
+                    fetch(`${API_URL}?action=update`, {
+                        method: "POST",
+                        mode: "no-cors",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ id, harga: price })
+                    }).catch(err => console.error(err));
+                }
+            }
+        }
+
+        function handleDeleteItem(id) {
+            if(!confirm("Hapus item ini dari daftar belanja?")) return;
+
+            if (isApiConfigured) {
+                toggleLoading(true);
+                fetch(`${API_URL}?action=delete`, {
+                    method: "POST",
+                    mode: "no-cors",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ id })
+                }).then(() => {
+                    shoppingItems = shoppingItems.filter(i => i.id != id);
+                    renderApp();
+                }).catch(err => console.error(err))
+                  .finally(() => toggleLoading(false));
+            } else {
+                shoppingItems = shoppingItems.filter(i => i.id != id);
+                renderApp();
+            }
+        }
+    </script>
+</body>
+</html>
+"""
+
