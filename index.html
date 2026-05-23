@@ -84,7 +84,7 @@
             <div id="konten-nota" class="bg-white rounded-xl shadow-md border border-slate-100 p-6 hidden">
                 <div class="mb-4">
                     <h2 class="text-lg font-bold text-slate-800">📄 File Upload Dokumen Nota Belanja</h2>
-                    <p class="text-xs text-slate-400 mt-0.5">Mendukung format file: Gambar (JPG, JPEG, PNG), berkas PDF, maupun file dokumen lainnya.</p>
+                    <p class="text-xs text-slate-400 mt-0.5">Mendukung Gambar (JPG, JPEG, PNG) & Dokumen (PDF). Gambar kamera HP berukuran besar akan dikompres otomatis demi mencegah error sistem.</p>
                 </div>
                 
                 <form id="form-upload-nota" class="space-y-4 max-w-md bg-slate-50 p-5 border border-slate-200 rounded-xl">
@@ -93,7 +93,7 @@
                         <input type="file" id="input-file-nota" required class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
                     </div>
                     
-                    <div id="status-upload" class="text-xs font-medium text-amber-600 hidden">Sedang mengirim berkas berkala ke Google Drive... Mohon tunggu.</div>
+                    <div id="status-upload" class="text-xs font-medium text-amber-600 hidden animate-pulse">Memproses berkas & mengupload ke Google Drive... Mohon tunggu.</div>
                     
                     <button type="submit" id="btn-submit-nota" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2.5 rounded-lg transition-colors shadow-xs">
                         Mulai Upload ke Drive
@@ -144,7 +144,7 @@
 
     <script>
         // PENTING: Ganti dengan URL hasil Deployment Apps Script Anda yang baru
-        const API_URL = "https://script.google.com/macros/s/AKfycbxccqf13RXpKfdY1Op1ovqCEAxvU9fpvsfAMLG--oTymN6e1HHTEBbj_165eV2UVepQCw/exec"; 
+        const API_URL = "https://script.google.com/macros/s/AKfycbw_WGHZW6kEZWWY2AcNt8viZW9ybeznJZd7wvA-F5Xsp4AcFV5riP4in3-3A3526Xb65Q/exec"; 
 
         let shoppingItems = [];
         let statusSesi = { isLoggedIn: false, username: "", role: "" };
@@ -204,7 +204,6 @@
             jalankanReloadOtomatis();
         }
 
-        // KONTROL ALUR PINDAH HALAMAN TAB
         function gantiTab(targetTab) {
             tabAktif = targetTab;
             const tabBelanja = document.getElementById("konten-belanja");
@@ -215,12 +214,10 @@
             const btnNota = document.getElementById("btn-tab-nota");
             const btnAdmin = document.getElementById("btn-tab-admin");
 
-            // Sembunyikan semua kontainer halaman
             tabBelanja.classList.add("hidden");
             tabNota.classList.add("hidden");
             tabAdmin.classList.add("hidden");
 
-            // Reset gaya CSS tombol navigasi
             btnBelanja.className = "py-4 px-5 text-sm font-semibold text-slate-500 hover:text-slate-700 border-b-2 border-transparent transition-colors focus:outline-hidden whitespace-nowrap";
             btnNota.className = "py-4 px-5 text-sm font-semibold text-slate-500 hover:text-slate-700 border-b-2 border-transparent transition-colors focus:outline-hidden whitespace-nowrap";
             btnAdmin.className = "py-4 px-5 text-sm font-semibold text-slate-500 hover:text-slate-700 border-b-2 border-transparent transition-colors focus:outline-hidden whitespace-nowrap";
@@ -237,7 +234,7 @@
             }
         }
 
-        // AKSI CORE FITUR: UPLOAD NOTA BELANJA KE GOOGLE DRIVE
+        // FITUR UPLOAD NOTA BARU YANG SUDAH DILENGKAPI AUTO-COMPRESS GAMBAR BERUKURAN BESAR
         function handleUploadNota(e) {
             e.preventDefault();
             const fileInput = document.getElementById("input-file-nota");
@@ -245,45 +242,92 @@
             const btnSubmit = document.getElementById("btn-submit-nota");
 
             if (fileInput.files.length === 0) return;
-            
             const file = fileInput.files[0];
-            const reader = new FileReader();
             
             statusText.classList.remove("hidden");
+            statusText.innerText = "Sedang memproses berkas berkala...";
             btnSubmit.disabled = true;
             btnSubmit.className = "bg-slate-400 text-white text-xs font-bold px-4 py-2.5 rounded-lg cursor-not-allowed";
 
-            // Mengubah file biner menjadi string Base64 agar dapat dilempar melalui skrip Fetch JSON API
-            reader.readAsDataURL(file);
-            reader.onload = function() {
-                const rawLog = reader.result.split(',');
-                const dataBase64 = rawLog[1]; // Mengambil baris kode Base64 murni
+            const reader = new FileReader();
 
-                const objekPayload = {
-                    namaFile: file.name,
-                    type: file.type,
-                    base64: dataBase64
+            // Cek apakah berkas yang diupload berupa gambar (JPG, JPEG, PNG)
+            if (file.type.startsWith('image/')) {
+                reader.readAsDataURL(file);
+                reader.onload = function(event) {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = function() {
+                        // Proses konversi ukuran resolusi menggunakan HTML Canvas
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+
+                        // Batasi resolusi maksimal lebar/tinggi gambar di 1200 pixel agar size menyusut tajam
+                        const MAX_WIDTH = 1200;
+                        const MAX_HEIGHT = 1200;
+
+                        if (width > height) {
+                            if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                        } else {
+                            if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        // Ekspor gambar canvas menjadi base64 berformat JPEG dengan kualitas kompresi tinggi (0.7)
+                        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
+                        
+                        kirimKeDriveAPI({
+                            namaFile: file.name.replace(/\.[^/.]+$/, "") + ".jpg", // Ubah ekstensi akhir ke .jpg
+                            type: "image/jpeg",
+                            base64: compressedBase64
+                        }, statusText, btnSubmit, fileInput);
+                    };
                 };
-
-                fetch(`${API_URL}?action=upload_nota`, {
-                    method: "POST",
-                    body: JSON.stringify(objekPayload)
-                })
-                .then(res => res.json())
-                .then(data => {
-                    alert(data.pesan);
-                    if(data.sukses) fileInput.value = ""; // Kosongkan form jika berhasil
-                })
-                .catch(err => alert("Terjadi error sistem saat memproses upload nota!"))
-                .finally(() => {
-                    statusText.classList.add("hidden");
-                    btnSubmit.disabled = false;
-                    btnSubmit.className = "bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2.5 rounded-lg transition-colors shadow-xs";
-                });
-            };
+            } else {
+                // Jika dokumen non-gambar (seperti PDF), kirim langsung tanpa kompresi
+                reader.readAsDataURL(file);
+                reader.onload = function() {
+                    kirimKeDriveAPI({
+                        namaFile: file.name,
+                        type: file.type,
+                        base64: reader.result.split(',')[1]
+                    }, statusText, btnSubmit, fileInput);
+                };
+            }
         }
 
-        // AMBIL DAFTAR USER DARI SPREADSHEET
+        // Fungsi pembantu eksekusi AJAX Fetch kirim data ke Google Apps Script
+        function kirimKeDriveAPI(payload, statusText, btnSubmit, fileInput) {
+            statusText.innerText = "Mengupload file ke Google Drive...";
+            
+            fetch(`${API_URL}?action=upload_nota`, {
+                method: "POST",
+                body: JSON.stringify(payload)
+            })
+            .then(res => {
+                if (!res.ok) throw new Error("Respons jaringan API bermasalah.");
+                return res.json();
+            })
+            .then(data => {
+                alert(data.pesan);
+                if (data.sukses) fileInput.value = "";
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Error: Gagal mengupload file. Pastikan setelan deployment Apps Script Anda sudah diatur ke 'Anyone' (Siapa Saja)!");
+            })
+            .finally(() => {
+                statusText.classList.add("hidden");
+                btnSubmit.disabled = false;
+                btnSubmit.className = "bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2.5 rounded-lg transition-colors shadow-xs";
+            });
+        }
+
         function loadUserList() {
             if (statusSesi.role !== "Admin") return;
             fetch(`${API_URL}?action=read_users`)
@@ -330,9 +374,8 @@
 
         function handleLogout() { localStorage.removeItem("sesi_belanja"); window.location.reload(); }
 
-        // OPERASI DATA DAFTAR BELANJAAN (CRUD)
         function loadDataFromSheets() {
-            if(tabAktif !== "belanja") return; // Jangan lakukan hit sinkronisasi jika user sedang membuka halaman tab nota/admin
+            if(tabAktif !== "belanja") return; 
             const loader = document.getElementById("loading-state");
             loader.classList.remove("hidden");
             fetch(`${API_URL}?action=read`)
@@ -395,7 +438,6 @@
             fetch(`${API_URL}?action=delete`, { method: "POST", body: JSON.stringify({ id }) }).then(() => { shoppingItems = shoppingItems.filter(i => i.id != id); renderApp(); });
         }
 
-        // AUTOMATISASI REFRESH IDLE 7 DETIK
         function jalankanReloadOtomatis() {
             if (!statusSesi.isLoggedIn) return; 
             clearTimeout(reloadTimer);
