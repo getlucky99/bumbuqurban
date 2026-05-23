@@ -45,26 +45,45 @@
         </header>
 
         <main class="max-w-4xl mx-auto px-4 mt-6">
+            
             <div id="panel-admin" class="bg-white rounded-xl shadow-xs border border-indigo-100 p-5 mb-6 border-l-4 border-l-indigo-500 hidden">
-                <h2 class="text-sm font-bold text-indigo-950 mb-3 flex items-center gap-2">⚙️ Menu Admin: Tambah Pengguna Baru</h2>
-                <form id="form-register" class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+                <h2 class="text-sm font-bold text-indigo-950 mb-3 flex items-center gap-2">⚙️ Menu Admin: Manajemen Pengguna</h2>
+                
+                <form id="form-register" class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end mb-5 pb-5 border-b border-slate-100">
                     <div>
                         <label class="block text-xs font-semibold text-slate-500 mb-1">Username Baru</label>
                         <input type="text" id="reg-username" required class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-xs outline-hidden" placeholder="Nama user...">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-500 mb-1">Password</label>
-                        <input type="password" id="reg-password" required class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-xs outline-hidden" placeholder="Kombinasi kata...">
+                        <input type="password" id="reg-password" required class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-xs outline-hidden" placeholder="Kunci sandi...">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-500 mb-1">Hak Akses (Role)</label>
                         <select id="reg-role" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-xs outline-hidden">
-                            <option value="Admin">Admin (Bisa Tambah User)</option>
-                            <option value="User">User Biasa (Hanya Belanja)</option>
+                            <option value="Admin">Admin</option>
+                            <option value="User">User Biasa</option>
                         </select>
                     </div>
                     <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs px-4 py-2 rounded-lg transition-colors shadow-xs">Simpan User</button>
                 </form>
+
+                <div class="mt-4">
+                    <h3 class="text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Daftar Pengguna Saat Ini:</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-200 text-slate-600">
+                                    <th class="p-2 font-semibold">Username</th>
+                                    <th class="p-2 font-semibold">Role / Hak Akses</th>
+                                    <th class="p-2 font-semibold text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabel-user-list" class="divide-y divide-slate-100 text-slate-700">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
 
             <div class="bg-white rounded-xl shadow-xs border border-slate-100 p-6 mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -89,10 +108,8 @@
     </div>
 
     <script>
-        // =========================================================================
-        // PENTING: ISI DENGAN URL DEPLOY WEB APP GOOGLE APPS SCRIPT ANDA
-        // =========================================================================
-        const API_URL = "https://script.google.com/macros/s/AKfycbzCpSz_IHQK49104-lgP_iZ9nLuy1E3XWkfb-VtL-OJYSpLwn3dxhBc9lssD8iyEd6HBQ/exec"; 
+        // PENTING: Ganti dengan URL baru hasil Deployment Apps Script Anda
+        const API_URL = "https://script.google.com/macros/s/AKfycbxdUNhQML5g7NzqVJQ29fJKrTyw32KrM7aHKCEW_MBKpP21uZgkD3aC2wi6vBDktF3U1g/exec"; 
 
         let shoppingItems = [];
         let statusSesi = { isLoggedIn: false, username: "", role: "" };
@@ -103,7 +120,6 @@
             document.getElementById("form-register").addEventListener("submit", handleRegister);
             document.getElementById("form-tambah").addEventListener("submit", handleAddItem);
             
-            // Periksa Session localstorage biar kalau di-refresh tidak berulang kali ketik login
             const simpananSesi = localStorage.getItem("sesi_belanja");
             if (simpananSesi) {
                 statusSesi = JSON.parse(simpananSesi);
@@ -111,7 +127,6 @@
             }
         });
 
-        // PROSES STRUKTUR LOGIN
         function handleLogin(e) {
             e.preventDefault();
             const username = document.getElementById("login-username").value.trim();
@@ -130,7 +145,7 @@
                 } else {
                     alert(data.pesan);
                 }
-            }).catch(err => alert("Gagal memproses login, pastikan API_URL benar!"));
+            }).catch(err => alert("Gagal memproses login, periksa koneksi atau API_URL!"));
         }
 
         function bukaHalamanUtama() {
@@ -139,9 +154,9 @@
             document.getElementById("user-aktif").innerText = statusSesi.username;
             document.getElementById("role-aktif").innerText = statusSesi.role;
 
-            // Jika dia admin, tampilkan panel form tambah user baru
             if (statusSesi.role === "Admin") {
                 document.getElementById("panel-admin").classList.remove("hidden");
+                loadUserList(); // Muat daftar pengguna jika login sebagai Admin
             }
             
             loadDataFromSheets();
@@ -149,7 +164,34 @@
             jalankanReloadOtomatis();
         }
 
-        // PROSES TAMBAH USER BARU (REGISTER)
+        // AMBIL DAFTAR USER DARI GOOGLE SHEETS (KHUSUS ADMIN)
+        function loadUserList() {
+            fetch(`${API_URL}?action=read_users`)
+            .then(res => res.json())
+            .then(users => {
+                const tbody = document.getElementById("tabel-user-list");
+                tbody.innerHTML = "";
+                users.forEach(user => {
+                    const row = document.createElement("tr");
+                    row.className = "border-b border-slate-100 hover:bg-slate-50";
+                    
+                    // Tombol hapus dinonaktifkan jika baris tersebut adalah akun Admin yang sedang login saat ini
+                    const isSelf = user.username === statusSesi.username;
+                    const tombolHapus = isSelf 
+                        ? `<span class="text-slate-400 italic text-xs">Anda</span>`
+                        : `<button onclick="handleDeleteUser('${user.username}')" class="text-red-600 hover:text-red-800 font-semibold px-2 py-1">Hapus</button>`;
+
+                    row.innerHTML = `
+                        <td class="p-2 font-medium text-slate-800">${user.username}</td>
+                        <td class="p-2"><span class="px-2 py-0.5 rounded text-xs font-semibold ${user.role === 'Admin' ? 'bg-indigo-50 text-indigo-700' : 'bg-slate-100 text-slate-600'}">${user.role}</span></td>
+                        <td class="p-2 text-center">${tombolHapus}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            });
+        }
+
+        // PROSES TAMBAH USER BARU
         function handleRegister(e) {
             e.preventDefault();
             const username = document.getElementById("reg-username").value.trim();
@@ -166,6 +208,24 @@
                 if(data.sukses) {
                     document.getElementById("reg-username").value = "";
                     document.getElementById("reg-password").value = "";
+                    loadUserList(); // Segarkan tabel user setelah berhasil menambah
+                }
+            });
+        }
+
+        // PROSES HAPUS USER
+        function handleDeleteUser(usernameTarget) {
+            if (!confirm(`Apakah Anda yakin ingin menghapus user "${usernameTarget}"?`)) return;
+
+            fetch(`${API_URL}?action=delete_user`, {
+                method: "POST",
+                body: JSON.stringify({ username: usernameTarget })
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert(data.pesan);
+                if (data.sukses) {
+                    loadUserList(); // Segarkan kembali daftar tabel user
                 }
             });
         }
@@ -175,7 +235,7 @@
             window.location.reload();
         }
 
-        // AMBIL DATA & RENDER (Aktivitas CRUD Belanja biasa)
+        // MANAJEMEN DATA DAFTAR BELANJAAN (CRUD)
         function loadDataFromSheets() {
             const loader = document.getElementById("loading-state");
             loader.classList.remove("hidden");
@@ -252,13 +312,14 @@
             fetch(`${API_URL}?action=delete`, { method: "POST", body: JSON.stringify({ id }) }).then(() => { shoppingItems = shoppingItems.filter(i => i.id != id); renderApp(); });
         }
 
-        // FITUR SINKRONISASI / AUTO REFRESH JIKA IDLE 7 DETIK
+        // REFRESH SETELAH 7 DETIK KONDISI IDLE
         function jalankanReloadOtomatis() {
-            if (!statusSesi.isLoggedIn) return; // Jangan refresh jika masih di halaman login
+            if (!statusSesi.isLoggedIn) return; 
             clearTimeout(reloadTimer);
             reloadTimer = setTimeout(() => {
-                console.log("Idle 7 detik. Mengambil data teranyar...");
+                console.log("Idle 7 detik. Sinkronisasi data otomatis...");
                 loadDataFromSheets();
+                if(statusSesi.role === "Admin") loadUserList(); // Segarkan daftar user juga
             }, 7000);
         }
 
