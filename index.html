@@ -21,7 +21,7 @@
 
     <header class="bg-gradient-to-r from-emerald-600 to-teal-700 text-white py-8 px-4 shadow-md text-center">
         <h1 class="text-2xl md:text-3xl font-bold tracking-tight">Ceklist Belanja Bumbu Untuk Masak Qurban</h1>
-        <p class="text-emerald-100 text-sm mt-2 max-w-md mx-auto">Menu: Sate Kambing, Olahan Kaki Sapi, Jerohan Goreng Ketumbar, Sop Balungan Sapi, Sate Sapi</p>
+        <p class="text-emerald-100 text-sm mt-2 max-w-md mx-auto">Menu: Sate Kambing, Olahan Kaki Sapi, Jerohan Goreng Ketumbar, Sop Balungan Sapi, Tengkelng kambing, Sate Sapi</p>
     </header>
 
     <main class="max-w-4xl mx-auto px-4 mt-6">
@@ -410,7 +410,7 @@
             }
         }
 // =========================================================================
-// SKRIP TAMBAHAN: AUTO SINKRONISASI KE GOOGLE SHEETS JIKA IDLE 10 DETIK
+// SKRIP TAMBAHAN: AUTO SINKRONISASI KE GOOGLE SHEETS JIKA IDLE 5 DETIK
 // =========================================================================
 let sinkronTimer;
 
@@ -418,20 +418,20 @@ function jalankanSinkronisasiOtomatis() {
     // Hapus timer sebelumnya jika user kembali melakukan aktivitas
     clearTimeout(sinkronTimer);
     
-    // Setel hitung mundur 10 detik (10000 milidetik)
+    // Setel hitung mundur 5 detik (5000 milidetik)
     sinkronTimer = setTimeout(() => {
         // Cek apakah URL API Google Sheets sudah diisi oleh user
         if (typeof isApiConfigured !== 'undefined' && isApiConfigured) {
-            console.log("Aplikasi idle 10 detik. Memulai sinkronisasi latar belakang...");
+            console.log("Aplikasi idle 5 detik. Memulai sinkronisasi latar belakang...");
             
             // Panggil fungsi bawaan untuk mengambil data terbaru dari Google Sheets
             if (typeof loadDataFromSheets === 'function') {
                 loadDataFromSheets();
             }
         } else {
-            console.log("Aplikasi idle 10 detik, namun API belum dikonfigurasi. Lewati sinkronisasi.");
+            console.log("Aplikasi idle 5 detik, namun API belum dikonfigurasi. Lewati sinkronisasi.");
         }
-    }, 10000);
+    }, 5000);
 }
 
 // Fungsi untuk merekam segala jenis interaksi user di browser
