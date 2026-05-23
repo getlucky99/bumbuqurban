@@ -44,12 +44,15 @@
             </div>
         </header>
 
-        <div id="navigasi-tab" class="bg-white border-b border-slate-200 sticky top-0 z-10 hidden">
-            <div class="max-w-4xl mx-auto flex px-4">
-                <button id="btn-tab-belanja" onclick="gantiTab('belanja')" class="border-b-2 border-emerald-600 text-emerald-600 py-4 px-6 text-sm font-bold transition-colors focus:outline-hidden">
+        <div id="navigasi-tab" class="bg-white border-b border-slate-200 sticky top-0 z-10">
+            <div class="max-w-4xl mx-auto flex px-4 overflow-x-auto">
+                <button id="btn-tab-belanja" onclick="gantiTab('belanja')" class="py-4 px-5 text-sm font-bold transition-colors focus:outline-hidden whitespace-nowrap">
                     🛒 Daftar Belanja
                 </button>
-                <button id="btn-tab-admin" onclick="gantiTab('admin')" class="border-b-2 border-transparent text-slate-500 hover:text-slate-700 py-4 px-6 text-sm font-semibold transition-colors focus:outline-hidden">
+                <button id="btn-tab-nota" onclick="gantiTab('nota')" class="py-4 px-5 text-sm font-semibold transition-colors focus:outline-hidden whitespace-nowrap">
+                    📄 Upload Nota
+                </button>
+                <button id="btn-tab-admin" onclick="gantiTab('admin')" class="py-4 px-5 text-sm font-semibold transition-colors focus:outline-hidden whitespace-nowrap hidden">
                     ⚙️ Manajemen User
                 </button>
             </div>
@@ -78,9 +81,28 @@
                 <div id="lists-container" class="space-y-8"></div>
             </div>
 
+            <div id="konten-nota" class="bg-white rounded-xl shadow-md border border-slate-100 p-6 hidden">
+                <div class="mb-4">
+                    <h2 class="text-lg font-bold text-slate-800">📄 File Upload Dokumen Nota Belanja</h2>
+                    <p class="text-xs text-slate-400 mt-0.5">Mendukung format file: Gambar (JPG, JPEG, PNG), berkas PDF, maupun file dokumen lainnya.</p>
+                </div>
+                
+                <form id="form-upload-nota" class="space-y-4 max-w-md bg-slate-50 p-5 border border-slate-200 rounded-xl">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1.5">Pilih File Nota:</label>
+                        <input type="file" id="input-file-nota" required class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
+                    </div>
+                    
+                    <div id="status-upload" class="text-xs font-medium text-amber-600 hidden">Sedang mengirim berkas berkala ke Google Drive... Mohon tunggu.</div>
+                    
+                    <button type="submit" id="btn-submit-nota" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2.5 rounded-lg transition-colors shadow-xs">
+                        Mulai Upload ke Drive
+                    </button>
+                </form>
+            </div>
+
             <div id="konten-admin" class="bg-white rounded-xl shadow-xs border border-indigo-100 p-6 border-l-4 border-l-indigo-500 hidden">
                 <h2 class="text-base font-bold text-indigo-950 mb-4 flex items-center gap-2">⚙️ Menu Admin: Manajemen Pengguna</h2>
-                
                 <form id="form-register" class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end mb-6 pb-6 border-b border-slate-100">
                     <div>
                         <label class="block text-xs font-semibold text-slate-500 mb-1">Username Baru</label>
@@ -111,8 +133,7 @@
                                     <th class="p-2 font-semibold text-center">Aksi</th>
                                 </tr>
                             </thead>
-                            <tbody id="tabel-user-list" class="divide-y divide-slate-100 text-slate-700">
-                                </tbody>
+                            <tbody id="tabel-user-list" class="divide-y divide-slate-100 text-slate-700"></tbody>
                         </table>
                     </div>
                 </div>
@@ -122,17 +143,19 @@
     </div>
 
     <script>
-        // PENTING: Ganti dengan URL hasil Deployment Apps Script Anda
-        const API_URL = "https://script.google.com/macros/s/AKfycbxdUNhQML5g7NzqVJQ29fJKrTyw32KrM7aHKCEW_MBKpP21uZgkD3aC2wi6vBDktF3U1g/exec"; 
+        // PENTING: Ganti dengan URL hasil Deployment Apps Script Anda yang baru
+        const API_URL = "ISI_URL_WEB_APP_DI_SINI"; 
 
         let shoppingItems = [];
         let statusSesi = { isLoggedIn: false, username: "", role: "" };
         let reloadTimer;
+        let tabAktif = "belanja";
 
         document.addEventListener("DOMContentLoaded", () => {
             document.getElementById("form-login").addEventListener("submit", handleLogin);
             document.getElementById("form-register").addEventListener("submit", handleRegister);
             document.getElementById("form-tambah").addEventListener("submit", handleAddItem);
+            document.getElementById("form-upload-nota").addEventListener("submit", handleUploadNota);
             
             const simpananSesi = localStorage.getItem("sesi_belanja");
             if (simpananSesi) {
@@ -159,7 +182,7 @@
                 } else {
                     alert(data.pesan);
                 }
-            }).catch(err => alert("Gagal memproses login, periksa koneksi atau API_URL!"));
+            }).catch(err => alert("Gagal koneksi atau API_URL salah!"));
         }
 
         function bukaHalamanUtama() {
@@ -168,45 +191,96 @@
             document.getElementById("user-aktif").innerText = statusSesi.username;
             document.getElementById("role-aktif").innerText = statusSesi.role;
 
-            // Kontrol Tampilan Khusus Akses Admin
             if (statusSesi.role === "Admin") {
-                document.getElementById("navigasi-tab").classList.remove("hidden");
+                document.getElementById("btn-tab-admin").classList.remove("hidden");
                 loadUserList();
             } else {
-                document.getElementById("navigasi-tab").classList.add("hidden");
+                document.getElementById("btn-tab-admin").classList.add("hidden");
             }
             
-            // Default selalu menampilkan halaman belanja saat buka aplikasi
             gantiTab('belanja');
-            
             loadDataFromSheets();
             pasangPendeteksiAktifitasReload();
             jalankanReloadOtomatis();
         }
 
-        // FUNGSI UNTUK PERPINDAHAN TAB HALAMAN (KHUSUS ADMIN)
+        // KONTROL ALUR PINDAH HALAMAN TAB
         function gantiTab(targetTab) {
+            tabAktif = targetTab;
             const tabBelanja = document.getElementById("konten-belanja");
+            const tabNota = document.getElementById("konten-nota");
             const tabAdmin = document.getElementById("konten-admin");
+            
             const btnBelanja = document.getElementById("btn-tab-belanja");
+            const btnNota = document.getElementById("btn-tab-nota");
             const btnAdmin = document.getElementById("btn-tab-admin");
+
+            // Sembunyikan semua kontainer halaman
+            tabBelanja.classList.add("hidden");
+            tabNota.classList.add("hidden");
+            tabAdmin.classList.add("hidden");
+
+            // Reset gaya CSS tombol navigasi
+            btnBelanja.className = "py-4 px-5 text-sm font-semibold text-slate-500 hover:text-slate-700 border-b-2 border-transparent transition-colors focus:outline-hidden whitespace-nowrap";
+            btnNota.className = "py-4 px-5 text-sm font-semibold text-slate-500 hover:text-slate-700 border-b-2 border-transparent transition-colors focus:outline-hidden whitespace-nowrap";
+            btnAdmin.className = "py-4 px-5 text-sm font-semibold text-slate-500 hover:text-slate-700 border-b-2 border-transparent transition-colors focus:outline-hidden whitespace-nowrap";
 
             if (targetTab === 'belanja') {
                 tabBelanja.classList.remove("hidden");
-                tabAdmin.classList.add("hidden");
-                
-                // Ubah gaya tombol aktif
-                btnBelanja.className = "border-b-2 border-emerald-600 text-emerald-600 py-4 px-6 text-sm font-bold transition-colors focus:outline-hidden";
-                btnAdmin.className = "border-b-2 border-transparent text-slate-500 hover:text-slate-700 py-4 px-6 text-sm font-semibold transition-colors focus:outline-hidden";
+                btnBelanja.className = "py-4 px-5 text-sm font-bold text-emerald-600 border-b-2 border-emerald-600 transition-colors focus:outline-hidden whitespace-nowrap";
+            } else if (targetTab === 'nota') {
+                tabNota.classList.remove("hidden");
+                btnNota.className = "py-4 px-5 text-sm font-bold text-emerald-600 border-b-2 border-emerald-600 transition-colors focus:outline-hidden whitespace-nowrap";
             } else if (targetTab === 'admin' && statusSesi.role === "Admin") {
-                tabBelanja.classList.add("hidden");
                 tabAdmin.classList.remove("hidden");
-                
-                // Ubah gaya tombol aktif
-                btnBelanja.className = "border-b-2 border-transparent text-slate-500 hover:text-slate-700 py-4 px-6 text-sm font-semibold transition-colors focus:outline-hidden";
-                btnAdmin.className = "border-b-2 border-indigo-600 text-indigo-600 py-4 px-6 text-sm font-bold transition-colors focus:outline-hidden";
-                loadUserList();
+                btnAdmin.className = "py-4 px-5 text-sm font-bold text-indigo-600 border-b-2 border-indigo-600 transition-colors focus:outline-hidden whitespace-nowrap";
             }
+        }
+
+        // AKSI CORE FITUR: UPLOAD NOTA BELANJA KE GOOGLE DRIVE
+        function handleUploadNota(e) {
+            e.preventDefault();
+            const fileInput = document.getElementById("input-file-nota");
+            const statusText = document.getElementById("status-upload");
+            const btnSubmit = document.getElementById("btn-submit-nota");
+
+            if (fileInput.files.length === 0) return;
+            
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            
+            statusText.classList.remove("hidden");
+            btnSubmit.disabled = true;
+            btnSubmit.className = "bg-slate-400 text-white text-xs font-bold px-4 py-2.5 rounded-lg cursor-not-allowed";
+
+            // Mengubah file biner menjadi string Base64 agar dapat dilempar melalui skrip Fetch JSON API
+            reader.readAsDataURL(file);
+            reader.onload = function() {
+                const rawLog = reader.result.split(',');
+                const dataBase64 = rawLog[1]; // Mengambil baris kode Base64 murni
+
+                const objekPayload = {
+                    namaFile: file.name,
+                    type: file.type,
+                    base64: dataBase64
+                };
+
+                fetch(`${API_URL}?action=upload_nota`, {
+                    method: "POST",
+                    body: JSON.stringify(objekPayload)
+                })
+                .then(res => res.json())
+                .then(data => {
+                    alert(data.pesan);
+                    if(data.sukses) fileInput.value = ""; // Kosongkan form jika berhasil
+                })
+                .catch(err => alert("Terjadi error sistem saat memproses upload nota!"))
+                .finally(() => {
+                    statusText.classList.add("hidden");
+                    btnSubmit.disabled = false;
+                    btnSubmit.className = "bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2.5 rounded-lg transition-colors shadow-xs";
+                });
+            };
         }
 
         // AMBIL DAFTAR USER DARI SPREADSHEET
@@ -220,7 +294,6 @@
                 users.forEach(user => {
                     const row = document.createElement("tr");
                     row.className = "border-b border-slate-100 hover:bg-slate-50";
-                    
                     const isSelf = user.username === statusSesi.username;
                     const tombolHapus = isSelf 
                         ? `<span class="text-slate-400 italic text-xs">Anda</span>`
@@ -236,77 +309,48 @@
             });
         }
 
-        // PROSES REGISTER USER BARU
         function handleRegister(e) {
             e.preventDefault();
             const username = document.getElementById("reg-username").value.trim();
             const password = document.getElementById("reg-password").value.trim();
             const role = document.getElementById("reg-role").value;
 
-            fetch(`${API_URL}?action=register`, {
-                method: "POST",
-                body: JSON.stringify({ username, password, role })
-            })
-            .then(res => res.json())
-            .then(data => {
+            fetch(`${API_URL}?action=register`, { method: "POST", body: JSON.stringify({ username, password, role }) })
+            .then(res => res.json()).then(data => {
                 alert(data.pesan);
-                if(data.sukses) {
-                    document.getElementById("reg-username").value = "";
-                    document.getElementById("reg-password").value = "";
-                    loadUserList();
-                }
+                if(data.sukses) { document.getElementById("reg-username").value = ""; document.getElementById("reg-password").value = ""; loadUserList(); }
             });
         }
 
-        // PROSES HAPUS USER
         function handleDeleteUser(usernameTarget) {
             if (!confirm(`Apakah Anda yakin ingin menghapus user "${usernameTarget}"?`)) return;
-
-            fetch(`${API_URL}?action=delete_user`, {
-                method: "POST",
-                body: JSON.stringify({ username: usernameTarget })
-            })
-            .then(res => res.json())
-            .then(data => {
-                alert(data.pesan);
-                if (data.sukses) {
-                    loadUserList();
-                }
-            });
+            fetch(`${API_URL}?action=delete_user`, { method: "POST", body: JSON.stringify({ username: usernameTarget }) })
+            .then(res => res.json()).then(data => { alert(data.pesan); if (data.sukses) loadUserList(); });
         }
 
-        function handleLogout() {
-            localStorage.removeItem("sesi_belanja");
-            window.location.reload();
-        }
+        function handleLogout() { localStorage.removeItem("sesi_belanja"); window.location.reload(); }
 
         // OPERASI DATA DAFTAR BELANJAAN (CRUD)
         function loadDataFromSheets() {
+            if(tabAktif !== "belanja") return; // Jangan lakukan hit sinkronisasi jika user sedang membuka halaman tab nota/admin
             const loader = document.getElementById("loading-state");
             loader.classList.remove("hidden");
             fetch(`${API_URL}?action=read`)
-                .then(res => res.json())
-                .then(data => { shoppingItems = data; renderApp(); })
+                .then(res => res.json()).then(data => { shoppingItems = data; renderApp(); })
                 .finally(() => loader.classList.add("hidden"));
         }
 
         function renderApp() {
-            const container = document.getElementById("lists-container");
-            container.innerHTML = "";
+            const container = document.getElementById("lists-container"); container.innerHTML = "";
             const categories = ["BUMBU SEGAR & EMPON-EMPON", "BUMBU KERING & REMPAH", "BAHAN RACIKAN & KEBUTUHAN LAIN"];
-            
             categories.forEach(cat => {
                 const itemsInCat = shoppingItems.filter(item => item.kategori === cat);
                 const section = document.createElement("div");
                 section.className = "bg-white rounded-xl border border-slate-100 overflow-hidden mb-4 shadow-xs";
                 section.innerHTML = `<div class="bg-slate-50 border-b border-slate-100 px-5 py-3 flex justify-between items-center"><h3 class="font-bold text-sm text-slate-700">${cat}</h3></div>`;
-                
-                const listGroup = document.createElement("div");
-                listGroup.className = "divide-y divide-slate-100";
-                
+                const listGroup = document.createElement("div"); listGroup.className = "divide-y divide-slate-100";
                 itemsInCat.forEach(item => {
-                    const row = document.createElement("div");
-                    row.className = "p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3";
+                    const row = document.createElement("div"); row.className = "p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3";
                     row.innerHTML = `<div class="flex items-start gap-3 flex-1">
                         <input type="checkbox" ${item.selesai ? 'checked' : ''} class="w-5 h-5 rounded text-emerald-600 mt-0.5" onchange="handleToggleCheck('${item.id}', this.checked)">
                         <div><span class="text-sm font-semibold block ${item.selesai ? 'strikethrough' : 'text-slate-800'}">${item.nama}</span><span class="text-xs text-slate-400 block">${item.ket}</span></div>
@@ -338,18 +382,12 @@
 
         function handleToggleCheck(id, isChecked) {
             const idx = shoppingItems.findIndex(i => i.id == id);
-            if(idx !== -1) {
-                shoppingItems[idx].selesai = isChecked; renderApp();
-                fetch(`${API_URL}?action=update`, { method: "POST", body: JSON.stringify({ id, selesai: isChecked }) });
-            }
+            if(idx !== -1) { shoppingItems[idx].selesai = isChecked; renderApp(); fetch(`${API_URL}?action=update`, { method: "POST", body: JSON.stringify({ id, selesai: isChecked }) }); }
         }
 
         function handlePriceChange(id, value) {
             const price = Number(value) || 0; const idx = shoppingItems.findIndex(i => i.id == id);
-            if(idx !== -1) {
-                shoppingItems[idx].harga = price; updateSummaryCounters();
-                fetch(`${API_URL}?action=update`, { method: "POST", body: JSON.stringify({ id, harga: price }) });
-            }
+            if(idx !== -1) { shoppingItems[idx].harga = price; updateSummaryCounters(); fetch(`${API_URL}?action=update`, { method: "POST", body: JSON.stringify({ id, harga: price }) }); }
         }
 
         function handleDeleteItem(id) {
@@ -357,12 +395,12 @@
             fetch(`${API_URL}?action=delete`, { method: "POST", body: JSON.stringify({ id }) }).then(() => { shoppingItems = shoppingItems.filter(i => i.id != id); renderApp(); });
         }
 
-        // REFRESH DATA SETELAH 7 DETIK KONDISI IDLE
+        // AUTOMATISASI REFRESH IDLE 7 DETIK
         function jalankanReloadOtomatis() {
             if (!statusSesi.isLoggedIn) return; 
             clearTimeout(reloadTimer);
             reloadTimer = setTimeout(() => {
-                console.log("Idle 7 detik. Menyegarkan data otomatis...");
+                console.log("Idle 7 detik. Sinkronisasi data...");
                 loadDataFromSheets();
                 if(statusSesi.role === "Admin") loadUserList(); 
             }, 7000);
@@ -370,9 +408,7 @@
 
         function pasangPendeteksiAktifitasReload() {
             const daftarEvent = ['mousemove', 'mousedown', 'keypress', 'touchstart', 'scroll'];
-            daftarEvent.forEach(namaEvent => {
-                window.addEventListener(namaEvent, jalankanReloadOtomatis, true);
-            });
+            daftarEvent.forEach(namaEvent => { window.addEventListener(namaEvent, jalankanReloadOtomatis, true); });
         }
     </script>
 </body>
