@@ -409,42 +409,45 @@
                 renderApp();
             }
         }
-
-        // =========================================================================
-// SKRIP TAMBAHAN: AUTO REFRESH KETIKA TIDAK ADA AKTIVITAS (IDLE) 10 DETIK
 // =========================================================================
-let idleTimer;
+// SKRIP TAMBAHAN: AUTO SINKRONISASI KE GOOGLE SHEETS JIKA IDLE 10 DETIK
+// =========================================================================
+let sinkronTimer;
 
-function resetIdleTimer() {
-    // Hapus hitung mundur sebelumnya setiap kali ada pergerakan/aktivitas
-    clearTimeout(idleTimer);
+function jalankanSinkronisasiOtomatis() {
+    // Hapus timer sebelumnya jika user kembali melakukan aktivitas
+    clearTimeout(sinkronTimer);
     
-    // Mulai hitung mundur baru (10.000 milidetik = 10 detik)
-    idleTimer = setTimeout(() => {
-        console.log("Tidak ada aktivitas selama 10 detik. Memuat ulang data...");
-        
-        // Sinkronisasi data dari Google Sheets jika API sudah dikonfigurasi
-        if (isApiConfigured) {
-            loadDataFromSheets();
+    // Setel hitung mundur 10 detik (10000 milidetik)
+    sinkronTimer = setTimeout(() => {
+        // Cek apakah URL API Google Sheets sudah diisi oleh user
+        if (typeof isApiConfigured !== 'undefined' && isApiConfigured) {
+            console.log("Aplikasi idle 10 detik. Memulai sinkronisasi latar belakang...");
+            
+            // Panggil fungsi bawaan untuk mengambil data terbaru dari Google Sheets
+            if (typeof loadDataFromSheets === 'function') {
+                loadDataFromSheets();
+            }
         } else {
-            // Jika masih mode lokal tanpa API, refresh halaman browser sepenuhnya
-            window.location.reload();
+            console.log("Aplikasi idle 10 detik, namun API belum dikonfigurasi. Lewati sinkronisasi.");
         }
     }, 10000);
 }
 
-// Daftarkan semua event interaksi pengguna yang dianggap sebagai "Aktivitas"
-function pasangPendeteksiAktivitas() {
-    const daftarEvent = ['mousemove', 'mousedown', 'keypress', 'touchstart', 'scroll'];
+// Fungsi untuk merekam segala jenis interaksi user di browser
+function pasangPendeteksiAktifitas() {
+    // Event yang menandakan user masih aktif (menggerakkan mouse, mengetik, menyentuh layar HP, atau scroll)
+    const kumpulanEvent = ['mousemove', 'mousedown', 'keypress', 'touchstart', 'scroll'];
     
-    daftarEvent.forEach(namaEvent => {
-        window.addEventListener(namaEvent, resetIdleTimer, true);
+    kumpulanEvent.forEach(namaEvent => {
+        window.addEventListener(namaEvent, jalankanSinkronisasiOtomatis, true);
     });
 }
 
-// Jalankan pendeteksi aktivitas dan mulai hitung mundur pertama kali saat halaman dimuat
-pasangPendeteksiAktivitas();
-resetIdleTimer();
+// Mulai jalankan pendeteksi aktivitas saat halaman pertama kali terbuka
+pasangPendeteksiAktifitas();
+jalankanSinkronisasiOtomatis();
+       
     </script>
 </body>
 </html>
