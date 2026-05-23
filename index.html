@@ -410,44 +410,36 @@
             }
         }
 // =========================================================================
-// SKRIP TAMBAHAN: AUTO SINKRONISASI KE GOOGLE SHEETS JIKA IDLE 5 DETIK
+// SKRIP TAMBAHAN: AUTO REFRESH HALAMAN (RELOAD) JIKA IDLE 7 DETIK
 // =========================================================================
-let sinkronTimer;
+let reloadTimer;
 
-function jalankanSinkronisasiOtomatis() {
-    // Hapus timer sebelumnya jika user kembali melakukan aktivitas
-    clearTimeout(sinkronTimer);
+function jalankanReloadOtomatis() {
+    // Hapus timer hitung mundur sebelumnya setiap kali user beraktivitas
+    clearTimeout(reloadTimer);
     
-    // Setel hitung mundur 5 detik (5000 milidetik)
-    sinkronTimer = setTimeout(() => {
-        // Cek apakah URL API Google Sheets sudah diisi oleh user
-        if (typeof isApiConfigured !== 'undefined' && isApiConfigured) {
-            console.log("Aplikasi idle 5 detik. Memulai sinkronisasi latar belakang...");
-            
-            // Panggil fungsi bawaan untuk mengambil data terbaru dari Google Sheets
-            if (typeof loadDataFromSheets === 'function') {
-                loadDataFromSheets();
-            }
-        } else {
-            console.log("Aplikasi idle 5 detik, namun API belum dikonfigurasi. Lewati sinkronisasi.");
-        }
-    }, 5000);
+    // Setel hitung mundur baru selama 7 detik (7000 milidetik)
+    reloadTimer = setTimeout(() => {
+        console.log("Mendeteksi tidak ada aktivitas selama 7 detik. Memuat ulang halaman...");
+        
+        // Memaksa browser melakukan refresh halaman penuh
+        window.location.reload();
+    }, 7000); // 7000 milidetik = 7 detik
 }
 
-// Fungsi untuk merekam segala jenis interaksi user di browser
-function pasangPendeteksiAktifitas() {
-    // Event yang menandakan user masih aktif (menggerakkan mouse, mengetik, menyentuh layar HP, atau scroll)
-    const kumpulanEvent = ['mousemove', 'mousedown', 'keypress', 'touchstart', 'scroll'];
+// Fungsi untuk memantau pergerakan atau interaksi pengguna di browser
+function pasangPendeteksiAktifitasReload() {
+    // Kumpulan event interaksi (gerakan mouse, klik, ketik keyboard, sentuh layar HP, atau gulir layar)
+    const daftarEventInteraksi = ['mousemove', 'mousedown', 'keypress', 'touchstart', 'scroll'];
     
-    kumpulanEvent.forEach(namaEvent => {
-        window.addEventListener(namaEvent, jalankanSinkronisasiOtomatis, true);
+    daftarEventInteraksi.forEach(namaEvent => {
+        window.addEventListener(namaEvent, jalankanReloadOtomatis, true);
     });
 }
 
-// Mulai jalankan pendeteksi aktivitas saat halaman pertama kali terbuka
-pasangPendeteksiAktifitas();
-jalankanSinkronisasiOtomatis();
-       
+// Mulai jalankan pendeteksi aktivitas dan hitung mundur pertama saat halaman dibuka
+pasangPendeteksiAktifitasReload();
+jalankanReloadOtomatis();       
     </script>
 </body>
 </html>
