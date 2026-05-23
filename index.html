@@ -44,12 +44,44 @@
             </div>
         </header>
 
+        <div id="navigasi-tab" class="bg-white border-b border-slate-200 sticky top-0 z-10 hidden">
+            <div class="max-w-4xl mx-auto flex px-4">
+                <button id="btn-tab-belanja" onclick="gantiTab('belanja')" class="border-b-2 border-emerald-600 text-emerald-600 py-4 px-6 text-sm font-bold transition-colors focus:outline-hidden">
+                    🛒 Daftar Belanja
+                </button>
+                <button id="btn-tab-admin" onclick="gantiTab('admin')" class="border-b-2 border-transparent text-slate-500 hover:text-slate-700 py-4 px-6 text-sm font-semibold transition-colors focus:outline-hidden">
+                    ⚙️ Manajemen User
+                </button>
+            </div>
+        </div>
+
         <main class="max-w-4xl mx-auto px-4 mt-6">
             
-            <div id="panel-admin" class="bg-white rounded-xl shadow-xs border border-indigo-100 p-5 mb-6 border-l-4 border-l-indigo-500 hidden">
-                <h2 class="text-sm font-bold text-indigo-950 mb-3 flex items-center gap-2">⚙️ Menu Admin: Manajemen Pengguna</h2>
+            <div id="konten-belanja" class="space-y-6">
+                <div class="bg-white rounded-xl shadow-xs border border-slate-100 p-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="p-3 bg-slate-50 rounded-lg text-center"><span class="block text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Item</span><span id="stat-total" class="text-2xl font-bold text-slate-800">0</span></div>
+                    <div class="p-3 bg-emerald-50 rounded-lg text-center"><span class="block text-xs font-semibold text-emerald-600 uppercase tracking-wider">Sudah Dibeli</span><span id="stat-dibeli" class="text-2xl font-bold text-emerald-700">0</span></div>
+                    <div class="p-3 bg-amber-50 rounded-lg text-center"><span class="block text-xs font-semibold text-amber-600 uppercase tracking-wider">Belum Dibeli</span><span id="stat-belum" class="text-2xl font-bold text-amber-700">0</span></div>
+                    <div class="p-3 bg-teal-50 rounded-lg text-center"><span class="block text-xs font-semibold text-teal-600 uppercase tracking-wider">Total Belanja</span><span id="stat-harga" class="text-xl font-bold text-teal-700">Rp 0</span></div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-xs border border-slate-100 p-5">
+                    <h2 class="text-md font-bold text-slate-700 mb-3">➕ Tambah Item Baru</h2>
+                    <form id="form-tambah" class="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
+                        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Nama Item/Bumbu</label><input type="text" id="input-nama" required class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm" placeholder="Contoh: Ketumbar"></div>
+                        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Kategori</label><select id="input-kategori" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm"><option value="BUMBU SEGAR & EMPON-EMPON">BUMBU SEGAR & EMPON-EMPON</option><option value="BUMBU KERING & REMPAH">BUMBU KERING & REMPAH</option><option value="BAHAN RACIKAN & KEBUTUHAN LAIN">BAHAN RACIKAN & KEBUTUHAN LAIN</option></select></div>
+                        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Keterangan / Catatan</label><div class="flex gap-2"><input type="text" id="input-ket" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm" placeholder="Opsional..."><button type="submit" class="bg-emerald-600 text-white font-semibold text-sm px-4 py-2 rounded-lg shrink-0">Tambah</button></div></div>
+                    </form>
+                </div>
+
+                <div id="loading-state" class="text-center py-8 text-slate-400 font-medium hidden">Sinkronisasi Google Sheets...</div>
+                <div id="lists-container" class="space-y-8"></div>
+            </div>
+
+            <div id="konten-admin" class="bg-white rounded-xl shadow-xs border border-indigo-100 p-6 border-l-4 border-l-indigo-500 hidden">
+                <h2 class="text-base font-bold text-indigo-950 mb-4 flex items-center gap-2">⚙️ Menu Admin: Manajemen Pengguna</h2>
                 
-                <form id="form-register" class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end mb-5 pb-5 border-b border-slate-100">
+                <form id="form-register" class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end mb-6 pb-6 border-b border-slate-100">
                     <div>
                         <label class="block text-xs font-semibold text-slate-500 mb-1">Username Baru</label>
                         <input type="text" id="reg-username" required class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-xs outline-hidden" placeholder="Nama user...">
@@ -68,7 +100,7 @@
                     <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs px-4 py-2 rounded-lg transition-colors shadow-xs">Simpan User</button>
                 </form>
 
-                <div class="mt-4">
+                <div>
                     <h3 class="text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Daftar Pengguna Saat Ini:</h3>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse text-xs">
@@ -86,29 +118,11 @@
                 </div>
             </div>
 
-            <div class="bg-white rounded-xl shadow-xs border border-slate-100 p-6 mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div class="p-3 bg-slate-50 rounded-lg text-center"><span class="block text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Item</span><span id="stat-total" class="text-2xl font-bold text-slate-800">0</span></div>
-                <div class="p-3 bg-emerald-50 rounded-lg text-center"><span class="block text-xs font-semibold text-emerald-600 uppercase tracking-wider">Sudah Dibeli</span><span id="stat-dibeli" class="text-2xl font-bold text-emerald-700">0</span></div>
-                <div class="p-3 bg-amber-50 rounded-lg text-center"><span class="block text-xs font-semibold text-amber-600 uppercase tracking-wider">Belum Dibeli</span><span id="stat-belum" class="text-2xl font-bold text-amber-700">0</span></div>
-                <div class="p-3 bg-teal-50 rounded-lg text-center"><span class="block text-xs font-semibold text-teal-600 uppercase tracking-wider">Total Belanja</span><span id="stat-harga" class="text-xl font-bold text-teal-700">Rp 0</span></div>
-            </div>
-
-            <div class="bg-white rounded-xl shadow-xs border border-slate-100 p-5 mb-8">
-                <h2 class="text-md font-bold text-slate-700 mb-3">➕ Tambah Item Baru</h2>
-                <form id="form-tambah" class="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
-                    <div><label class="block text-xs font-semibold text-slate-500 mb-1">Nama Item/Bumbu</label><input type="text" id="input-nama" required class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm" placeholder="Contoh: Ketumbar"></div>
-                    <div><label class="block text-xs font-semibold text-slate-500 mb-1">Kategori</label><select id="input-kategori" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm"><option value="BUMBU SEGAR & EMPON-EMPON">BUMBU SEGAR & EMPON-EMPON</option><option value="BUMBU KERING & REMPAH">BUMBU KERING & REMPAH</option><option value="BAHAN RACIKAN & KEBUTUHAN LAIN">BAHAN RACIKAN & KEBUTUHAN LAIN</option></select></div>
-                    <div><label class="block text-xs font-semibold text-slate-500 mb-1">Keterangan / Catatan</label><div class="flex gap-2"><input type="text" id="input-ket" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm" placeholder="Opsional..."><button type="submit" class="bg-emerald-600 text-white font-semibold text-sm px-4 py-2 rounded-lg shrink-0">Tambah</button></div></div>
-                </form>
-            </div>
-
-            <div id="loading-state" class="text-center py-8 text-slate-400 font-medium hidden">Sinkronisasi Google Sheets...</div>
-            <div id="lists-container" class="space-y-8"></div>
         </main>
     </div>
 
     <script>
-        // PENTING: Ganti dengan URL baru hasil Deployment Apps Script Anda
+        // PENTING: Ganti dengan URL hasil Deployment Apps Script Anda
         const API_URL = "https://script.google.com/macros/s/AKfycbxdUNhQML5g7NzqVJQ29fJKrTyw32KrM7aHKCEW_MBKpP21uZgkD3aC2wi6vBDktF3U1g/exec"; 
 
         let shoppingItems = [];
@@ -154,18 +168,50 @@
             document.getElementById("user-aktif").innerText = statusSesi.username;
             document.getElementById("role-aktif").innerText = statusSesi.role;
 
+            // Kontrol Tampilan Khusus Akses Admin
             if (statusSesi.role === "Admin") {
-                document.getElementById("panel-admin").classList.remove("hidden");
-                loadUserList(); // Muat daftar pengguna jika login sebagai Admin
+                document.getElementById("navigasi-tab").classList.remove("hidden");
+                loadUserList();
+            } else {
+                document.getElementById("navigasi-tab").classList.add("hidden");
             }
+            
+            // Default selalu menampilkan halaman belanja saat buka aplikasi
+            gantiTab('belanja');
             
             loadDataFromSheets();
             pasangPendeteksiAktifitasReload();
             jalankanReloadOtomatis();
         }
 
-        // AMBIL DAFTAR USER DARI GOOGLE SHEETS (KHUSUS ADMIN)
+        // FUNGSI UNTUK PERPINDAHAN TAB HALAMAN (KHUSUS ADMIN)
+        function gantiTab(targetTab) {
+            const tabBelanja = document.getElementById("konten-belanja");
+            const tabAdmin = document.getElementById("konten-admin");
+            const btnBelanja = document.getElementById("btn-tab-belanja");
+            const btnAdmin = document.getElementById("btn-tab-admin");
+
+            if (targetTab === 'belanja') {
+                tabBelanja.classList.remove("hidden");
+                tabAdmin.classList.add("hidden");
+                
+                // Ubah gaya tombol aktif
+                btnBelanja.className = "border-b-2 border-emerald-600 text-emerald-600 py-4 px-6 text-sm font-bold transition-colors focus:outline-hidden";
+                btnAdmin.className = "border-b-2 border-transparent text-slate-500 hover:text-slate-700 py-4 px-6 text-sm font-semibold transition-colors focus:outline-hidden";
+            } else if (targetTab === 'admin' && statusSesi.role === "Admin") {
+                tabBelanja.classList.add("hidden");
+                tabAdmin.classList.remove("hidden");
+                
+                // Ubah gaya tombol aktif
+                btnBelanja.className = "border-b-2 border-transparent text-slate-500 hover:text-slate-700 py-4 px-6 text-sm font-semibold transition-colors focus:outline-hidden";
+                btnAdmin.className = "border-b-2 border-indigo-600 text-indigo-600 py-4 px-6 text-sm font-bold transition-colors focus:outline-hidden";
+                loadUserList();
+            }
+        }
+
+        // AMBIL DAFTAR USER DARI SPREADSHEET
         function loadUserList() {
+            if (statusSesi.role !== "Admin") return;
             fetch(`${API_URL}?action=read_users`)
             .then(res => res.json())
             .then(users => {
@@ -175,7 +221,6 @@
                     const row = document.createElement("tr");
                     row.className = "border-b border-slate-100 hover:bg-slate-50";
                     
-                    // Tombol hapus dinonaktifkan jika baris tersebut adalah akun Admin yang sedang login saat ini
                     const isSelf = user.username === statusSesi.username;
                     const tombolHapus = isSelf 
                         ? `<span class="text-slate-400 italic text-xs">Anda</span>`
@@ -191,7 +236,7 @@
             });
         }
 
-        // PROSES TAMBAH USER BARU
+        // PROSES REGISTER USER BARU
         function handleRegister(e) {
             e.preventDefault();
             const username = document.getElementById("reg-username").value.trim();
@@ -208,7 +253,7 @@
                 if(data.sukses) {
                     document.getElementById("reg-username").value = "";
                     document.getElementById("reg-password").value = "";
-                    loadUserList(); // Segarkan tabel user setelah berhasil menambah
+                    loadUserList();
                 }
             });
         }
@@ -225,7 +270,7 @@
             .then(data => {
                 alert(data.pesan);
                 if (data.sukses) {
-                    loadUserList(); // Segarkan kembali daftar tabel user
+                    loadUserList();
                 }
             });
         }
@@ -235,7 +280,7 @@
             window.location.reload();
         }
 
-        // MANAJEMEN DATA DAFTAR BELANJAAN (CRUD)
+        // OPERASI DATA DAFTAR BELANJAAN (CRUD)
         function loadDataFromSheets() {
             const loader = document.getElementById("loading-state");
             loader.classList.remove("hidden");
@@ -312,14 +357,14 @@
             fetch(`${API_URL}?action=delete`, { method: "POST", body: JSON.stringify({ id }) }).then(() => { shoppingItems = shoppingItems.filter(i => i.id != id); renderApp(); });
         }
 
-        // REFRESH SETELAH 7 DETIK KONDISI IDLE
+        // REFRESH DATA SETELAH 7 DETIK KONDISI IDLE
         function jalankanReloadOtomatis() {
             if (!statusSesi.isLoggedIn) return; 
             clearTimeout(reloadTimer);
             reloadTimer = setTimeout(() => {
-                console.log("Idle 7 detik. Sinkronisasi data otomatis...");
+                console.log("Idle 7 detik. Menyegarkan data otomatis...");
                 loadDataFromSheets();
-                if(statusSesi.role === "Admin") loadUserList(); // Segarkan daftar user juga
+                if(statusSesi.role === "Admin") loadUserList(); 
             }, 7000);
         }
 
