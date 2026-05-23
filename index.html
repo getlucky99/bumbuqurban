@@ -7,441 +7,267 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #f8fafc;
-        }
-        .strikethrough {
-            text-decoration: line-through;
-            color: #94a3b8;
-        }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; }
+        .strikethrough { text-decoration: line-through; color: #94a3b8; }
     </style>
 </head>
 <body class="text-slate-800 antialiased min-h-screen pb-12">
 
-    <header class="bg-gradient-to-r from-emerald-600 to-teal-700 text-white py-8 px-4 shadow-md text-center">
-        <h1 class="text-2xl md:text-3xl font-bold tracking-tight">Ceklist Belanja Bumbu Untuk Masak Qurban</h1>
-        <p class="text-emerald-100 text-sm mt-2 max-w-md mx-auto">Menu: Sate Kambing, Olahan Kaki Sapi, Jerohan Goreng Ketumbar, Sop Balungan Sapi, Tengkleng Kambing, Sate Sapi</p>
-    </header>
-
-    <main class="max-w-4xl mx-auto px-4 mt-6">
-        
-        <div id="api-warning" class="bg-amber-50 border-l-4 border-amber-500 p-4 mb-6 rounded-r-lg shadow-xs text-sm text-amber-800">
-            <p class="font-semibold">⚠️ Konfigurasi Diperlukan:</p>
-            <p class="mt-1">Silakan buka file <code class="bg-amber-100 px-1 rounded font-mono text-xs text-amber-900">index.html</code> dan ganti nilai <code class="font-mono text-xs">API_URL</code> dengan URL Web App dari Google Apps Script Anda agar data tersinkronisasi secara otomatis.</p>
-        </div>
-
-        <div class="bg-white rounded-xl shadow-xs border border-slate-100 p-6 mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="p-3 bg-slate-50 rounded-lg text-center">
-                <span class="block text-xs font-semibold uppercase tracking-wider text-slate-500">Total Item</span>
-                <span id="stat-total" class="text-2xl font-bold text-slate-800">0</span>
+    <div id="halaman-login" class="flex items-center justify-center min-h-screen px-4">
+        <div class="bg-white p-8 rounded-xl shadow-md border border-slate-100 max-w-sm w-full">
+            <div class="text-center mb-6">
+                <h2 class="text-2xl font-bold text-emerald-700">Masuk Aplikasi</h2>
+                <p class="text-xs text-slate-400 mt-1">Ceklist Belanja Bumbu Dapur</p>
             </div>
-            <div class="p-3 bg-emerald-50 rounded-lg text-center">
-                <span class="block text-xs font-semibold uppercase tracking-wider text-emerald-600">Sudah Dibeli</span>
-                <span id="stat-dibeli" class="text-2xl font-bold text-emerald-700">0</span>
-            </div>
-            <div class="p-3 bg-amber-50 rounded-lg text-center">
-                <span class="block text-xs font-semibold uppercase tracking-wider text-amber-600">Belum Dibeli</span>
-                <span id="stat-belum" class="text-2xl font-bold text-amber-700">0</span>
-            </div>
-            <div class="p-3 bg-teal-50 rounded-lg text-center">
-                <span class="block text-xs font-semibold uppercase tracking-wider text-teal-600">Total Belanja</span>
-                <span id="stat-harga" class="text-xl font-bold text-teal-700">Rp 0</span>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-xl shadow-xs border border-slate-100 p-5 mb-8">
-            <h2 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
-                Tambah Item Baru
-            </h2>
-            <form id="form-tambah" class="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
+            <form id="form-login" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Nama Item/Bumbu</label>
-                    <input type="text" id="input-nama" required class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-500" placeholder="Contoh: Merica Bubuk">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Username</label>
+                    <input type="text" id="login-username" required class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-hidden">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Kategori</label>
-                    <select id="input-kategori" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-500">
-                        <option value="BUMBU SEGAR & EMPON-EMPON">BUMBU SEGAR & EMPON-EMPON</option>
-                        <option value="BUMBU KERING & REMPAH">BUMBU KERING & REMPAH</option>
-                        <option value="BAHAN RACIKAN & KEBUTUHAN LAIN">BAHAN RACIKAN & KEBUTUHAN LAIN</option>
-                    </select>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Password</label>
+                    <input type="password" id="login-password" required class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-hidden">
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Keterangan / Catatan</label>
-                    <div class="flex gap-2">
-                        <input type="text" id="input-ket" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-500" placeholder="Opsional...">
-                        <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm px-4 py-2 rounded-lg transition-colors shadow-xs shrink-0">
-                            Tambah
-                        </button>
-                    </div>
-                </div>
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 rounded-lg transition-colors text-sm shadow-xs mt-2">Log In</button>
             </form>
         </div>
+    </div>
 
-        <div id="loading-state" class="text-center py-12 text-slate-400 font-medium hidden">
-            <svg class="animate-spin h-8 w-8 mx-auto mb-3 text-emerald-600" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            Menyinkronkan data dengan Google Sheets...
-        </div>
-
-        <div id="lists-container" class="space-y-8">
-            </div>
-
-        <footer class="mt-12 bg-amber-50 border border-amber-200 rounded-xl p-5 shadow-xs">
-            <div class="flex items-start gap-3">
-                <div class="bg-amber-500 text-white rounded-full p-1 shrink-0 mt-0.5">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
-                    </svg>
-                </div>
+    <div id="halaman-utama" class="hidden">
+        <header class="bg-gradient-to-r from-emerald-600 to-teal-700 text-white py-6 px-4 shadow-md">
+            <div class="max-w-4xl mx-auto flex justify-between items-center">
                 <div>
-                    <h4 class="font-bold text-amber-900 text-sm">Tips Pengolahan Daging & Jerohan:</h4>
-                    <p class="text-amber-800 text-xs md:text-sm mt-1 leading-relaxed">Rebus terpisah kaki sapi dan jerohan dengan jahe, salam, dan serai sebelum dicampur ke bumbu utama agar tidak bau prengus.</p>
+                    <h1 class="text-xl md:text-2xl font-bold tracking-tight">Ceklist Belanja Bumbu Dapur</h1>
+                    <p class="text-emerald-100 text-xs mt-1">Masuk sebagai: <span id="user-aktif" class="font-bold underline"></span> (<span id="role-aktif" class="italic"></span>)</p>
                 </div>
+                <button onclick="handleLogout()" class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors shadow-xs">Keluar</button>
             </div>
-        </footer>
-    </main>
+        </header>
+
+        <main class="max-w-4xl mx-auto px-4 mt-6">
+            <div id="panel-admin" class="bg-white rounded-xl shadow-xs border border-indigo-100 p-5 mb-6 border-l-4 border-l-indigo-500 hidden">
+                <h2 class="text-sm font-bold text-indigo-950 mb-3 flex items-center gap-2">⚙️ Menu Admin: Tambah Pengguna Baru</h2>
+                <form id="form-register" class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Username Baru</label>
+                        <input type="text" id="reg-username" required class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-xs outline-hidden" placeholder="Nama user...">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Password</label>
+                        <input type="password" id="reg-password" required class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-xs outline-hidden" placeholder="Kombinasi kata...">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Hak Akses (Role)</label>
+                        <select id="reg-role" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-xs outline-hidden">
+                            <option value="Admin">Admin (Bisa Tambah User)</option>
+                            <option value="User">User Biasa (Hanya Belanja)</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs px-4 py-2 rounded-lg transition-colors shadow-xs">Simpan User</button>
+                </form>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-xs border border-slate-100 p-6 mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="p-3 bg-slate-50 rounded-lg text-center"><span class="block text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Item</span><span id="stat-total" class="text-2xl font-bold text-slate-800">0</span></div>
+                <div class="p-3 bg-emerald-50 rounded-lg text-center"><span class="block text-xs font-semibold text-emerald-600 uppercase tracking-wider">Sudah Dibeli</span><span id="stat-dibeli" class="text-2xl font-bold text-emerald-700">0</span></div>
+                <div class="p-3 bg-amber-50 rounded-lg text-center"><span class="block text-xs font-semibold text-amber-600 uppercase tracking-wider">Belum Dibeli</span><span id="stat-belum" class="text-2xl font-bold text-amber-700">0</span></div>
+                <div class="p-3 bg-teal-50 rounded-lg text-center"><span class="block text-xs font-semibold text-teal-600 uppercase tracking-wider">Total Belanja</span><span id="stat-harga" class="text-xl font-bold text-teal-700">Rp 0</span></div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-xs border border-slate-100 p-5 mb-8">
+                <h2 class="text-md font-bold text-slate-700 mb-3">➕ Tambah Item Baru</h2>
+                <form id="form-tambah" class="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
+                    <div><label class="block text-xs font-semibold text-slate-500 mb-1">Nama Item/Bumbu</label><input type="text" id="input-nama" required class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm" placeholder="Contoh: Ketumbar"></div>
+                    <div><label class="block text-xs font-semibold text-slate-500 mb-1">Kategori</label><select id="input-kategori" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm"><option value="BUMBU SEGAR & EMPON-EMPON">BUMBU SEGAR & EMPON-EMPON</option><option value="BUMBU KERING & REMPAH">BUMBU KERING & REMPAH</option><option value="BAHAN RACIKAN & KEBUTUHAN LAIN">BAHAN RACIKAN & KEBUTUHAN LAIN</option></select></div>
+                    <div><label class="block text-xs font-semibold text-slate-500 mb-1">Keterangan / Catatan</label><div class="flex gap-2"><input type="text" id="input-ket" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm" placeholder="Opsional..."><button type="submit" class="bg-emerald-600 text-white font-semibold text-sm px-4 py-2 rounded-lg shrink-0">Tambah</button></div></div>
+                </form>
+            </div>
+
+            <div id="loading-state" class="text-center py-8 text-slate-400 font-medium hidden">Sinkronisasi Google Sheets...</div>
+            <div id="lists-container" class="space-y-8"></div>
+        </main>
+    </div>
 
     <script>
         // =========================================================================
-        // PENTING: Ganti URL di bawah ini dengan URL Web App dari Google Apps Script Anda!
+        // PENTING: ISI DENGAN URL DEPLOY WEB APP GOOGLE APPS SCRIPT ANDA
         // =========================================================================
-        const API_URL = "https://script.google.com/macros/s/AKfycbxP-Clo96TuoVJbPq97jeDY0iBtZXqEoDx068r1N7k49rTB3W3rSHc-J18mlKYNx_9T6g/exec";
-
-        // Pre-filled raw dataset from PDF to run locally if spreadsheet isn't deployed yet
-        let defaultItems = [
-            // Kategori 1
-            { id: "1", kategori: "BUMBU SEGAR & EMPON-EMPON", nama: "Bawang Merah", ket: "Beli agak banyak (dasar & bawang goreng)", selesai: false, harga: 0 },
-            { id: "2", kategori: "BUMBU SEGAR & EMPON-EMPON", nama: "Bawang Putih", ket: "Beli agak banyak (dasar semua masakan)", selesai: false, harga: 0 },
-            { id: "3", kategori: "BUMBU SEGAR & EMPON-EMPON", nama: "Jahe", ket: "Untuk rebusan kaki & jerohan", selesai: false, harga: 0 },
-            { id: "4", kategori: "BUMBU SEGAR & EMPON-EMPON", nama: "Lengkuas / Laos", ket: "", selesai: false, harga: 0 },
-            { id: "5", kategori: "BUMBU SEGAR & EMPON-EMPON", nama: "Knyit", ket: "Untuk jerohan & kaki sapi", selesai: false, harga: 0 },
-            { id: "6", kategori: "BUMBU SEGAR & EMPON-EMPON", nama: "Daun Jeruk", ket: "Untuk marinasi jerohan", selesai: false, harga: 0 },
-            { id: "7", kategori: "BUMBU SEGAR & EMPON-EMPON", nama: "Daun Salam", ket: "Pengilang amis rebusan", selesai: false, harga: 0 },
-            { id: "8", kategori: "BUMBU SEGAR & EMPON-EMPON", nama: "Serai", ket: "Beberapa batang", selesai: false, harga: 0 },
-            { id: "9", kategori: "BUMBU SEGAR & EMPON-EMPON", nama: "Daun Bawang & Seledri", ket: "Pewangi sate & jerohan", selesai: false, harga: 0 },
-            { id: "10", kategori: "BUMBU SEGAR & EMPON-EMPON", nama: "Tomat Merah", ket: "Khusus untuk Sop Balungan", selesai: false, harga: 0 },
-            { id: "11", kategori: "BUMBU SEGAR & EMPON-EMPON", nama: "Jeruk Nipis / Jeruk Limau", ket: "Pelengkap sop & sambal kecap", selesai: false, harga: 0 },
-            { id: "12", kategori: "BUMBU SEGAR & EMPON-EMPON", nama: "Cabai Rawit (Merah/Hijau)", ket: "Untuk kuah sop, sate, & sambal kecap", selesai: false, harga: 0 },
-            // Kategori 2
-            { id: "13", kategori: "BUMBU KERING & REMPAH", nama: "Ketumbar (Bubuk / Butiran)", ket: "Untuk marinasi sate sapi & jerohan", selesai: false, harga: 0 },
-            { id: "14", kategori: "BUMBU KERING & REMPAH", nama: "Merica / Lada Putih", ket: "Untuk sop & sate", selesai: false, harga: 0 },
-            { id: "15", kategori: "BUMBU KERING & REMPAH", nama: "Kemiri", ket: "Untuk pengental kuah/bumbu sate sapi", selesai: false, harga: 0 },
-            { id: "16", kategori: "BUMBU KERING & REMPAH", nama: "Pala (Biji / Bubuk)", ket: "Wajib untuk Sop Balungan", selesai: false, harga: 0 },
-            { id: "17", kategori: "BUMBU KERING & REMPAH", nama: "Kayu Manis", ket: "Rempah aromatik sop/olahan kaki", selesai: false, harga: 0 },
-            { id: "18", kategori: "BUMBU KERING & REMPAH", nama: "Cengkeh", ket: "Penambah aroma sop balungan", selesai: false, harga: 0 },
-            { id: "19", kategori: "BUMBU KERING & REMPAH", nama: "Kapulaga", ket: "Pewangi kuah sop/olahan kaki", selesai: false, harga: 0 },
-            { id: "20", kategori: "BUMBU KERING & REMPAH", nama: "Bunga Lawang / Pekak", ket: "Pewangi kuah sop/olahan kaki", selesai: false, harga: 0 },
-            { id: "21", kategori: "BUMBU KERING & REMPAH", nama: "Asam Jawa", ket: "Beli lebih (bumbu utama jerohan)", selesai: false, harga: 0 },
-            // Kategori 3
-            { id: "22", kategori: "BAHAN RACIKAN & KEBUTUHAN LAIN", nama: "Kecap Manis", ket: "Ukuran besar (untuk bumbu bakaran)", selesai: false, harga: 0 },
-            { id: "23", kategori: "BAHAN RACIKAN & KEBUTUHAN LAIN", nama: "Gula Merah / Gula Jawa", ket: "Secukupnya", selesai: false, harga: 0 },
-            { id: "24", kategori: "BAHAN RACIKAN & KEBUTUHAN LAIN", nama: "Garam & Gula Pasir", ket: "Stok dapur", selesai: false, harga: 0 },
-            { id: "25", kategori: "BAHAN RACIKAN & KEBUTUHAN LAIN", nama: "Kaldu Sapi Bubuk", ket: "Penyedap kuah sop & olahan kaki", selesai: false, harga: 0 },
-            { id: "26", kategori: "BAHAN RACIKAN & KEBUTUHAN LAIN", nama: "Minyak Goreng", ket: "Untuk menggoreng jerohan & tumis", selesai: false, harga: 0 },
-            { id: "27", kategori: "BAHAN RACIKAN & KEBUTUHAN LAIN", nama: "Bawang Goreng Siap Pakai", ket: "Taburan sate & sop (opsional)", selesai: false, harga: 0 },
-            { id: "28", kategori: "BAHAN RACIKAN & KEBUTUHAN LAIN", nama: "Arang", ket: "Bahan bakar utama untuk memanggang sate", selesai: false, harga: 0 }
-        ];
+        const API_URL = "https://script.google.com/macros/s/AKfycbzCpSz_IHQK49104-lgP_iZ9nLuy1E3XWkfb-VtL-OJYSpLwn3dxhBc9lssD8iyEd6HBQ/exec"; 
 
         let shoppingItems = [];
-
-        // Check if user has updated the API URL
-        const isApiConfigured = API_URL !== "ISI_URL_WEB_APP_DI_SINI" && API_URL.trim() !== "";
+        let statusSesi = { isLoggedIn: false, username: "", role: "" };
+        let reloadTimer;
 
         document.addEventListener("DOMContentLoaded", () => {
-            if (isApiConfigured) {
-                document.getElementById("api-warning").classList.add("hidden");
-                loadDataFromSheets();
-            } else {
-                // Fallback to local memory using default list if sheets are not integrated yet
-                shoppingItems = [...defaultItems];
-                renderApp();
-            }
-
-            // Register form listener
+            document.getElementById("form-login").addEventListener("submit", handleLogin);
+            document.getElementById("form-register").addEventListener("submit", handleRegister);
             document.getElementById("form-tambah").addEventListener("submit", handleAddItem);
+            
+            // Periksa Session localstorage biar kalau di-refresh tidak berulang kali ketik login
+            const simpananSesi = localStorage.getItem("sesi_belanja");
+            if (simpananSesi) {
+                statusSesi = JSON.parse(simpananSesi);
+                bukaHalamanUtama();
+            }
         });
 
-        // Fetch Data from Google Sheets
+        // PROSES STRUKTUR LOGIN
+        function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById("login-username").value.trim();
+            const password = document.getElementById("login-password").value.trim();
+
+            fetch(`${API_URL}?action=login`, {
+                method: "POST",
+                body: JSON.stringify({ username, password })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.sukses) {
+                    statusSesi = { isLoggedIn: true, username: username, role: data.role };
+                    localStorage.setItem("sesi_belanja", JSON.stringify(statusSesi));
+                    bukaHalamanUtama();
+                } else {
+                    alert(data.pesan);
+                }
+            }).catch(err => alert("Gagal memproses login, pastikan API_URL benar!"));
+        }
+
+        function bukaHalamanUtama() {
+            document.getElementById("halaman-login").classList.add("hidden");
+            document.getElementById("halaman-utama").classList.remove("hidden");
+            document.getElementById("user-aktif").innerText = statusSesi.username;
+            document.getElementById("role-aktif").innerText = statusSesi.role;
+
+            // Jika dia admin, tampilkan panel form tambah user baru
+            if (statusSesi.role === "Admin") {
+                document.getElementById("panel-admin").classList.remove("hidden");
+            }
+            
+            loadDataFromSheets();
+            pasangPendeteksiAktifitasReload();
+            jalankanReloadOtomatis();
+        }
+
+        // PROSES TAMBAH USER BARU (REGISTER)
+        function handleRegister(e) {
+            e.preventDefault();
+            const username = document.getElementById("reg-username").value.trim();
+            const password = document.getElementById("reg-password").value.trim();
+            const role = document.getElementById("reg-role").value;
+
+            fetch(`${API_URL}?action=register`, {
+                method: "POST",
+                body: JSON.stringify({ username, password, role })
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert(data.pesan);
+                if(data.sukses) {
+                    document.getElementById("reg-username").value = "";
+                    document.getElementById("reg-password").value = "";
+                }
+            });
+        }
+
+        function handleLogout() {
+            localStorage.removeItem("sesi_belanja");
+            window.location.reload();
+        }
+
+        // AMBIL DATA & RENDER (Aktivitas CRUD Belanja biasa)
         function loadDataFromSheets() {
-            toggleLoading(true);
+            const loader = document.getElementById("loading-state");
+            loader.classList.remove("hidden");
             fetch(`${API_URL}?action=read`)
                 .then(res => res.json())
-                .then(data => {
-                    shoppingItems = data;
-                    renderApp();
-                })
-                .catch(err => {
-                    console.error("Gagal memuat data:", err);
-                    alert("Gagal terhubung ke Google Sheets. Menggunakan database lokal sementara.");
-                    shoppingItems = [...defaultItems];
-                    renderApp();
-                })
-                .finally(() => toggleLoading(false));
+                .then(data => { shoppingItems = data; renderApp(); })
+                .finally(() => loader.classList.add("hidden"));
         }
 
-        function toggleLoading(show) {
-            const loader = document.getElementById("loading-state");
-            const container = document.getElementById("lists-container");
-            if (show) {
-                loader.classList.remove("hidden");
-                container.classList.add("opacity-40");
-            } else {
-                loader.classList.add("hidden");
-                container.classList.remove("opacity-40");
-            }
-        }
-
-        // Render entire UI layout
         function renderApp() {
             const container = document.getElementById("lists-container");
             container.innerHTML = "";
-
-            // Group by category
-            const categories = [
-                "BUMBU SEGAR & EMPON-EMPON",
-                "BUMBU KERING & REMPAH",
-                "BAHAN RACIKAN & KEBUTUHAN LAIN"
-            ];
-
+            const categories = ["BUMBU SEGAR & EMPON-EMPON", "BUMBU KERING & REMPAH", "BAHAN RACIKAN & KEBUTUHAN LAIN"];
+            
             categories.forEach(cat => {
                 const itemsInCat = shoppingItems.filter(item => item.kategori === cat);
-                
-                // Create section block
                 const section = document.createElement("div");
-                section.className = "bg-white rounded-xl shadow-xs border border-slate-100 overflow-hidden";
+                section.className = "bg-white rounded-xl border border-slate-100 overflow-hidden mb-4 shadow-xs";
+                section.innerHTML = `<div class="bg-slate-50 border-b border-slate-100 px-5 py-3 flex justify-between items-center"><h3 class="font-bold text-sm text-slate-700">${cat}</h3></div>`;
                 
-                // Section Header
-                const header = document.createElement("div");
-                header.className = "bg-slate-50 border-b border-slate-100 px-5 py-3.5 flex justify-between items-center";
-                header.innerHTML = `<h3 class="font-bold text-sm text-slate-700 tracking-wide">${cat}</h3>
-                                    <span class="text-xs font-semibold bg-slate-200/80 text-slate-600 px-2 py-0.5 rounded-full">${itemsInCat.length} Item</span>`;
-                section.appendChild(header);
-
-                // Section Body / Items List
                 const listGroup = document.createElement("div");
                 listGroup.className = "divide-y divide-slate-100";
-
-                if (itemsInCat.length === 0) {
-                    listGroup.innerHTML = `<div class="p-5 text-center text-sm text-slate-400 italic">Belum ada bumbu di kategori ini.</div>`;
-                } else {
-                    itemsInCat.forEach(item => {
-                        const row = document.createElement("div");
-                        row.className = `p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-colors ${item.selesai ? 'bg-slate-50/50' : 'hover:bg-slate-50/30'}`;
-                        
-                        // Left side: Checkbox and Info
-                        const leftSide = document.createElement("div");
-                        leftSide.className = "flex items-start gap-3 flex-1";
-                        
-                        const checkbox = document.createElement("input");
-                        checkbox.type = "checkbox";
-                        checkbox.checked = item.selesai;
-                        checkbox.className = "w-5 h-5 rounded-md border-slate-300 text-emerald-600 focus:ring-emerald-500 mt-0.5 cursor-pointer";
-                        checkbox.addEventListener("change", () => handleToggleCheck(item.id, checkbox.checked));
-                        
-                        const textInfo = document.createElement("div");
-                        textInfo.className = "space-y-0.5";
-                        
-                        const nameSpan = document.createElement("span");
-                        nameSpan.className = `text-sm font-semibold block ${item.selesai ? 'strikethrough' : 'text-slate-800'}`;
-                        nameSpan.innerText = item.nama;
-                        
-                        textInfo.appendChild(nameSpan);
-                        
-                        if (item.ket) {
-                            const descSpan = document.createElement("span");
-                            descSpan.className = "text-xs text-slate-400 block leading-normal";
-                            descSpan.innerText = item.ket;
-                            textInfo.appendChild(descSpan);
-                        }
-
-                        leftSide.appendChild(checkbox);
-                        leftSide.appendChild(textInfo);
-
-                        // Right side: Price input and Delete Action
-                        const rightSide = document.createElement("div");
-                        rightSide.className = "flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t sm:border-0 border-slate-100";
-
-                        // Price Input
-                        const priceWrapper = document.createElement("div");
-                        priceWrapper.className = "flex items-center bg-slate-100 rounded-lg px-2 py-1 border border-slate-200 max-w-[140px]";
-                        priceWrapper.innerHTML = `<span class="text-xs font-bold text-slate-400 mr-1">Rp</span>`;
-                        
-                        const priceInput = document.createElement("input");
-                        priceInput.type = "number";
-                        priceInput.value = item.harga || "";
-                        priceInput.placeholder = "0";
-                        priceInput.className = "bg-transparent w-full border-0 p-0 text-xs font-semibold focus:ring-0 focus:outline-hidden text-right";
-                        priceInput.addEventListener("blur", () => handlePriceChange(item.id, priceInput.value));
-                        priceInput.addEventListener("keypress", (e) => { if(e.key === "Enter") priceInput.blur(); });
-
-                        priceWrapper.appendChild(priceInput);
-
-                        // Delete Button
-                        const deleteBtn = document.createElement("button");
-                        deleteBtn.className = "text-slate-400 hover:text-rose-500 p-1.5 rounded-lg hover:bg-rose-50 transition-colors ml-1";
-                        deleteBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>`;
-                        deleteBtn.addEventListener("click", () => handleDeleteItem(item.id));
-
-                        rightSide.appendChild(priceWrapper);
-                        rightSide.appendChild(deleteBtn);
-
-                        row.appendChild(leftSide);
-                        row.appendChild(rightSide);
-                        listGroup.appendChild(row);
-                    });
-                }
-
-                section.appendChild(listGroup);
-                container.appendChild(section);
+                
+                itemsInCat.forEach(item => {
+                    const row = document.createElement("div");
+                    row.className = "p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3";
+                    row.innerHTML = `<div class="flex items-start gap-3 flex-1">
+                        <input type="checkbox" ${item.selesai ? 'checked' : ''} class="w-5 h-5 rounded text-emerald-600 mt-0.5" onchange="handleToggleCheck('${item.id}', this.checked)">
+                        <div><span class="text-sm font-semibold block ${item.selesai ? 'strikethrough' : 'text-slate-800'}">${item.nama}</span><span class="text-xs text-slate-400 block">${item.ket}</span></div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="flex items-center bg-slate-100 rounded px-2 py-1 border text-xs"><span>Rp</span><input type="number" value="${item.harga || ''}" class="bg-transparent w-20 text-right font-semibold" onblur="handlePriceChange('${item.id}', this.value)"></div>
+                        <button class="text-slate-400 hover:text-rose-500 text-xs px-2" onclick="handleDeleteItem('${item.id}')">Hapus</button>
+                    </div>`;
+                    listGroup.appendChild(row);
+                });
+                section.appendChild(listGroup); container.appendChild(section);
             });
-
             updateSummaryCounters();
         }
 
-        // Calculate and display stats
         function updateSummaryCounters() {
-            const total = shoppingItems.length;
-            const dibeli = shoppingItems.filter(i => i.selesai).length;
-            const belum = total - dibeli;
+            const total = shoppingItems.length; const dibeli = shoppingItems.filter(i => i.selesai).length; const belum = total - dibeli;
             const totalHarga = shoppingItems.reduce((acc, curr) => acc + (Number(curr.harga) || 0), 0);
-
-            document.getElementById("stat-total").innerText = total;
-            document.getElementById("stat-dibeli").innerText = dibeli;
-            document.getElementById("stat-belum").innerText = belum;
-            document.getElementById("stat-harga").innerText = "Rp " + totalHarga.toLocaleString("id-ID");
+            document.getElementById("stat-total").innerText = total; document.getElementById("stat-dibeli").innerText = dibeli;
+            document.getElementById("stat-belum").innerText = belum; document.getElementById("stat-harga").innerText = "Rp " + totalHarga.toLocaleString("id-ID");
         }
 
-        // Action Handlers
         function handleAddItem(e) {
-            e.preventDefault();
-            const nama = document.getElementById("input-nama").value.trim();
-            const kategori = document.getElementById("input-kategori").value;
-            const ket = document.getElementById("input-ket").value.trim();
-            const id = "ID_" + Date.now();
-
-            if (!nama) return;
-
+            e.preventDefault(); const nama = document.getElementById("input-nama").value; const kategori = document.getElementById("input-kategori").value; const ket = document.getElementById("input-ket").value; const id = "ID_" + Date.now();
             const newItem = { id, kategori, nama, ket, selesai: false, harga: 0 };
-
-            if (isApiConfigured) {
-                toggleLoading(true);
-                fetch(`${API_URL}?action=create`, {
-                    method: "POST",
-                    mode: "no-cors",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(newItem)
-                }).then(() => {
-                    // Because no-cors won't give readable responses, optimally refresh local view instantly
-                    shoppingItems.push(newItem);
-                    renderApp();
-                }).catch(err => console.error(err))
-                  .finally(() => toggleLoading(false));
-            } else {
-                shoppingItems.push(newItem);
-                renderApp();
-            }
-
-            // Reset form input
-            document.getElementById("input-nama").value = "";
-            document.getElementById("input-ket").value = "";
+            fetch(`${API_URL}?action=create`, { method: "POST", body: JSON.stringify(newItem) }).then(() => { shoppingItems.push(newItem); renderApp(); });
+            document.getElementById("input-nama").value = ""; document.getElementById("input-ket").value = "";
         }
 
         function handleToggleCheck(id, isChecked) {
             const idx = shoppingItems.findIndex(i => i.id == id);
             if(idx !== -1) {
-                shoppingItems[idx].selesai = isChecked;
-                updateSummaryCounters();
-                
-                // Toggle strikethrough instantly on dynamic node UI level for responsiveness
-                renderApp(); 
-
-                if (isApiConfigured) {
-                    fetch(`${API_URL}?action=update`, {
-                        method: "POST",
-                        mode: "no-cors",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ id, selesai: isChecked })
-                    }).catch(err => console.error(err));
-                }
+                shoppingItems[idx].selesai = isChecked; renderApp();
+                fetch(`${API_URL}?action=update`, { method: "POST", body: JSON.stringify({ id, selesai: isChecked }) });
             }
         }
 
         function handlePriceChange(id, value) {
-            const price = Number(value) || 0;
-            const idx = shoppingItems.findIndex(i => i.id == id);
-            if(idx !== -1 && shoppingItems[idx].harga !== price) {
-                shoppingItems[idx].harga = price;
-                updateSummaryCounters();
-
-                if (isApiConfigured) {
-                    fetch(`${API_URL}?action=update`, {
-                        method: "POST",
-                        mode: "no-cors",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ id, harga: price })
-                    }).catch(err => console.error(err));
-                }
+            const price = Number(value) || 0; const idx = shoppingItems.findIndex(i => i.id == id);
+            if(idx !== -1) {
+                shoppingItems[idx].harga = price; updateSummaryCounters();
+                fetch(`${API_URL}?action=update`, { method: "POST", body: JSON.stringify({ id, harga: price }) });
             }
         }
 
         function handleDeleteItem(id) {
-            if(!confirm("Hapus item ini dari daftar belanja?")) return;
-
-            if (isApiConfigured) {
-                toggleLoading(true);
-                fetch(`${API_URL}?action=delete`, {
-                    method: "POST",
-                    mode: "no-cors",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ id })
-                }).then(() => {
-                    shoppingItems = shoppingItems.filter(i => i.id != id);
-                    renderApp();
-                }).catch(err => console.error(err))
-                  .finally(() => toggleLoading(false));
-            } else {
-                shoppingItems = shoppingItems.filter(i => i.id != id);
-                renderApp();
-            }
+            if(!confirm("Hapus item?")) return;
+            fetch(`${API_URL}?action=delete`, { method: "POST", body: JSON.stringify({ id }) }).then(() => { shoppingItems = shoppingItems.filter(i => i.id != id); renderApp(); });
         }
-// =========================================================================
-// SKRIP TAMBAHAN: AUTO REFRESH HALAMAN (RELOAD) JIKA IDLE 10 DETIK
-// =========================================================================
-let reloadTimer;
 
-function jalankanReloadOtomatis() {
-    // Hapus timer hitung mundur sebelumnya setiap kali user beraktivitas
-    clearTimeout(reloadTimer);
-    
-    // Setel hitung mundur baru selama 10 detik (10000 milidetik)
-    reloadTimer = setTimeout(() => {
-        console.log("Mendeteksi tidak ada aktivitas selama 7 detik. Memuat ulang halaman...");
-        
-        // Memaksa browser melakukan refresh halaman penuh
-        window.location.reload();
-    }, 10000); // 10000 milidetik = 10 detik
-}
+        // FITUR SINKRONISASI / AUTO REFRESH JIKA IDLE 7 DETIK
+        function jalankanReloadOtomatis() {
+            if (!statusSesi.isLoggedIn) return; // Jangan refresh jika masih di halaman login
+            clearTimeout(reloadTimer);
+            reloadTimer = setTimeout(() => {
+                console.log("Idle 7 detik. Mengambil data teranyar...");
+                loadDataFromSheets();
+            }, 7000);
+        }
 
-// Fungsi untuk memantau pergerakan atau interaksi pengguna di browser
-function pasangPendeteksiAktifitasReload() {
-    // Kumpulan event interaksi (gerakan mouse, klik, ketik keyboard, sentuh layar HP, atau gulir layar)
-    const daftarEventInteraksi = ['mousemove', 'mousedown', 'keypress', 'touchstart', 'scroll'];
-    
-    daftarEventInteraksi.forEach(namaEvent => {
-        window.addEventListener(namaEvent, jalankanReloadOtomatis, true);
-    });
-}
-
-// Mulai jalankan pendeteksi aktivitas dan hitung mundur pertama saat halaman dibuka
-pasangPendeteksiAktifitasReload();
-jalankanReloadOtomatis();       
+        function pasangPendeteksiAktifitasReload() {
+            const daftarEvent = ['mousemove', 'mousedown', 'keypress', 'touchstart', 'scroll'];
+            daftarEvent.forEach(namaEvent => {
+                window.addEventListener(namaEvent, jalankanReloadOtomatis, true);
+            });
+        }
     </script>
 </body>
 </html>
-
-
