@@ -409,8 +409,44 @@
                 renderApp();
             }
         }
+
+        // =========================================================================
+// SKRIP TAMBAHAN: AUTO REFRESH KETIKA TIDAK ADA AKTIVITAS (IDLE) 10 DETIK
+// =========================================================================
+let idleTimer;
+
+function resetIdleTimer() {
+    // Hapus hitung mundur sebelumnya setiap kali ada pergerakan/aktivitas
+    clearTimeout(idleTimer);
+    
+    // Mulai hitung mundur baru (10.000 milidetik = 10 detik)
+    idleTimer = setTimeout(() => {
+        console.log("Tidak ada aktivitas selama 10 detik. Memuat ulang data...");
+        
+        // Sinkronisasi data dari Google Sheets jika API sudah dikonfigurasi
+        if (isApiConfigured) {
+            loadDataFromSheets();
+        } else {
+            // Jika masih mode lokal tanpa API, refresh halaman browser sepenuhnya
+            window.location.reload();
+        }
+    }, 10000);
+}
+
+// Daftarkan semua event interaksi pengguna yang dianggap sebagai "Aktivitas"
+function pasangPendeteksiAktivitas() {
+    const daftarEvent = ['mousemove', 'mousedown', 'keypress', 'touchstart', 'scroll'];
+    
+    daftarEvent.forEach(namaEvent => {
+        window.addEventListener(namaEvent, resetIdleTimer, true);
+    });
+}
+
+// Jalankan pendeteksi aktivitas dan mulai hitung mundur pertama kali saat halaman dimuat
+pasangPendeteksiAktivitas();
+resetIdleTimer();
     </script>
 </body>
 </html>
-"""
+
 
