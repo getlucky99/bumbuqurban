@@ -410,7 +410,7 @@
             }
         }
 // =========================================================================
-// SKRIP TAMBAHAN: AUTO REFRESH HALAMAN (RELOAD) JIKA IDLE 7 DETIK
+// SKRIP TAMBAHAN: AUTO REFRESH HALAMAN (RELOAD) JIKA IDLE 10 DETIK
 // =========================================================================
 let reloadTimer;
 
@@ -418,13 +418,13 @@ function jalankanReloadOtomatis() {
     // Hapus timer hitung mundur sebelumnya setiap kali user beraktivitas
     clearTimeout(reloadTimer);
     
-    // Setel hitung mundur baru selama 7 detik (7000 milidetik)
+    // Setel hitung mundur baru selama 10 detik (10000 milidetik)
     reloadTimer = setTimeout(() => {
         console.log("Mendeteksi tidak ada aktivitas selama 7 detik. Memuat ulang halaman...");
         
         // Memaksa browser melakukan refresh halaman penuh
         window.location.reload();
-    }, 7000); // 7000 milidetik = 7 detik
+    }, 10000); // 10000 milidetik = 10 detik
 }
 
 // Fungsi untuk memantau pergerakan atau interaksi pengguna di browser
